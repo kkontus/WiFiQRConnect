@@ -13,9 +13,10 @@
     <string name="hint_password">Password</string>
     <string name="required_ssid">SSID is required!</string>
     <string name="required_password">Password is required!</string>
+    <string name="result_unable_to_read">Unable to read tha data from the image</string>
 
     <string-array name="network_methods_array">
-        <item>Open</item>
+        <item>OPEN</item>
         <item>WEP</item>
         <item>WPA/WPA2</item>
     </string-array>

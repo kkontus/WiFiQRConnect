@@ -15,11 +15,11 @@ import android.widget.TextView;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.kkontus.wifiqr.R;
+import com.kkontus.wifiqr.helpers.QRCodeFormatter;
 import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
 import com.kkontus.wifiqr.utils.ConnectionManagerUtils;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.LinkedHashMap;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -122,9 +122,19 @@ public class ReadQRFragment extends Fragment {
                 mTextViewConnectionData.setText(getString(R.string.qr_scanner_canceled));
             } else {
                 mTextViewConnectionData.setText(result.getContents().toString());
-                parseScannedInfo(result.getContents().toString());
-                ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils(getActivity(), mNetworkSSID, mNetworkPassword, mNetworkType);
-                connectionManagerUtils.establishConnection();
+
+                LinkedHashMap networkCredentials = new QRCodeFormatter().extractWiFiCredentials(result.getContents().toString());
+                mNetworkSSID = (String) networkCredentials.get(ConnectionManagerUtils.NETWORK_SSID);
+                mNetworkPassword = (String) networkCredentials.get(ConnectionManagerUtils.NETWORK_PASSWORD);
+                mNetworkType = (String) networkCredentials.get(ConnectionManagerUtils.NETWORK_TYPE);
+
+                // don't check for the condition "mNetworkType != null" since it's null for the open network
+                if (mNetworkSSID != null && mNetworkPassword != null) {
+                    ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils(getActivity(), mNetworkSSID, mNetworkPassword, mNetworkType);
+                    connectionManagerUtils.establishConnection();
+                } else {
+                    System.out.println("Some credentials are null");
+                }
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
@@ -139,33 +149,6 @@ public class ReadQRFragment extends Fragment {
         integrator.setBarcodeImageEnabled(true);
         integrator.setOrientationLocked(false);
         integrator.initiateScan();
-    }
-
-    private void parseScannedInfo(String networkInfo) {
-        Pattern pattern = Pattern.compile("\\[(.*?)\\]");
-        Matcher matcher = pattern.matcher(networkInfo);
-
-        while (matcher.find()) {
-            String networkCredentials = matcher.group(1);
-            if (networkCredentials.contains(ConnectionManagerUtils.NETWORK_SSID)) {
-                mNetworkSSID = parseNetworkInfo(networkCredentials);
-            } else if (networkCredentials.contains(ConnectionManagerUtils.NETWORK_PASSWORD)) {
-                mNetworkPassword = parseNetworkInfo(networkCredentials);
-            } else if (networkCredentials.contains(ConnectionManagerUtils.NETWORK_TYPE)) {
-                mNetworkType = parseNetworkInfo(networkCredentials);
-            } else {
-                System.out.println(" Unable to parse networkInfo");
-            }
-        }
-    }
-
-    private String parseNetworkInfo(String networkCredentials) {
-        Pattern pattern = Pattern.compile("\"([^\"]*)\"");
-        Matcher matcher = pattern.matcher(networkCredentials);
-        while (matcher.find()) {
-            return matcher.group(1);
-        }
-        return "";
     }
 
     // TODO: Rename method, update argument and hook method into UI event

@@ -18,8 +18,12 @@ import android.widget.TextView;
 
 import com.google.zxing.Result;
 import com.kkontus.wifiqr.R;
+import com.kkontus.wifiqr.helpers.QRCodeFormatter;
 import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
+import com.kkontus.wifiqr.utils.ConnectionManagerUtils;
 import com.kkontus.wifiqr.utils.ImageUtils;
+
+import java.util.LinkedHashMap;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -129,7 +133,24 @@ public class LoadQRFragment extends Fragment {
                     mQRCodeLoadedBitmap = bmp;
                     mImageViewLoadedQR.setImageBitmap(bmp);
                     Result result = imageUtils.readQRCodeImage(bmp);
-                    mTextViewLoadedData.setText(result.getText());
+                    if (result != null && result.getText() != null) {
+                        mTextViewLoadedData.setText(result.getText());
+
+                        LinkedHashMap networkCredentials = new QRCodeFormatter().extractWiFiCredentials(result.getText().toString());
+                        String mNetworkSSID = (String) networkCredentials.get(ConnectionManagerUtils.NETWORK_SSID);
+                        String mNetworkPassword = (String) networkCredentials.get(ConnectionManagerUtils.NETWORK_PASSWORD);
+                        String mNetworkType = (String) networkCredentials.get(ConnectionManagerUtils.NETWORK_TYPE);
+
+                        // don't check for the condition "mNetworkType != null" since it's null for the open network
+                        if (mNetworkSSID != null && mNetworkPassword != null) {
+                            ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils(getActivity(), mNetworkSSID, mNetworkPassword, mNetworkType);
+                            connectionManagerUtils.establishConnection();
+                        } else {
+                            System.out.println("Some credentials are null");
+                        }
+                    } else {
+                        mTextViewLoadedData.setText(getString(R.string.result_unable_to_read));
+                    }
                 }
                 break;
         }

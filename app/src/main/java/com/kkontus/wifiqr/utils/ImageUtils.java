@@ -21,6 +21,7 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.kkontus.wifiqr.helpers.QRCodeSize;
 
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
@@ -28,6 +29,12 @@ import java.io.IOException;
 
 public class ImageUtils {
     private Context mContext;
+    private static final int SMALL_WIDTH = 120;
+    private static final int SMALL_HEIGHT = 120;
+    private static final int MEDIUM_WIDTH = 230;
+    private static final int MEDIUM_HEIGHT = 230;
+    private static final int LARGE_WIDTH = 350;
+    private static final int LARGE_HEIGHT = 350;
 
     public ImageUtils(Context context) {
         mContext = context;
@@ -71,7 +78,21 @@ public class ImageUtils {
         return result;
     }
 
-    public Bitmap generateQRCode(String content, int imageWidth, int imageHeight) {
+    public Bitmap generateQRCode(String content, QRCodeSize outputImageSize) {
+        int imageWidth;
+        int imageHeight;
+        // these are standards for the WiFi QR codes
+        if (outputImageSize == QRCodeSize.SMALL) {
+            imageWidth = SMALL_WIDTH;
+            imageHeight = SMALL_HEIGHT;
+        } else if (outputImageSize == QRCodeSize.MEDIUM) {
+            imageWidth = MEDIUM_WIDTH;
+            imageHeight = MEDIUM_HEIGHT;
+        } else {
+            imageWidth = LARGE_WIDTH;
+            imageHeight = LARGE_HEIGHT;
+        }
+
         QRCodeWriter writer = new QRCodeWriter();
         Bitmap bitmap = null;
         try {

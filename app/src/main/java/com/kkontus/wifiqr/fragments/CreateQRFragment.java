@@ -23,6 +23,8 @@ import android.widget.Spinner;
 
 import com.kkontus.wifiqr.R;
 import com.kkontus.wifiqr.helpers.Config;
+import com.kkontus.wifiqr.helpers.QRCodeFormatter;
+import com.kkontus.wifiqr.helpers.QRCodeSize;
 import com.kkontus.wifiqr.helpers.SystemGlobal;
 import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
 import com.kkontus.wifiqr.utils.ConnectionManagerUtils;
@@ -106,17 +108,15 @@ public class CreateQRFragment extends Fragment {
 
                 ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils();
                 mNetworkType = connectionManagerUtils.networkTypeMapper(mSpinnerNetworkMethods.getSelectedItem().toString());
-                if (mNetworkSSID != null && mNetworkPassword != null && mNetworkType != null) {
+                // don't check for the condition "mNetworkType != null" since it's null for the open network
+                if (mNetworkSSID != null && mNetworkPassword != null) {
                     // hide keyboard
                     new SystemGlobal().hideKeyboard(CreateQRFragment.this);
 
                     // start generating QR code
-                    String content = "[networkSSID=\"" + mNetworkSSID + "\"]\n" +
-                            "[networkPassword=\"" + mNetworkPassword + "\"]\n" +
-                            "[networkType=\"" + mNetworkType + "\"]";
-
+                    String content = new QRCodeFormatter().formatWiFiQRCode(mNetworkSSID, mNetworkPassword, mNetworkType);
                     ImageUtils imageUtils = new ImageUtils(getActivity());
-                    Bitmap bitmap = imageUtils.generateQRCode(content, 512, 512);
+                    Bitmap bitmap = imageUtils.generateQRCode(content, QRCodeSize.LARGE);
                     drawSSIDAndPass(bitmap);
                     mQRCodeGeneratedBitmap = bitmap;
                     mImageViewGeneratedQR.setImageBitmap(bitmap);

@@ -14,9 +14,9 @@ public class ConnectionManagerUtils {
     private String mNetworkSSID;
     private String mNetworkPassword;
     private String mNetworkType;
-    private static final String OPEN = "open";
-    private static final String WEP = "wep";
-    private static final String WPA = "wpa";
+    private static final String OPEN = "OPEN";
+    private static final String WEP = "WEP";
+    private static final String WPA = "WPA";
     public static final String NETWORK_SSID = "networkSSID";
     public static final String NETWORK_PASSWORD = "networkPassword";
     public static final String NETWORK_TYPE = "networkType";
@@ -64,6 +64,10 @@ public class ConnectionManagerUtils {
     }
 
     private void chooseSecurityMethod(String method) {
+        if (method == null) {
+            method = OPEN;
+        }
+
         switch (method) {
             case OPEN:
                 configOpen();
@@ -125,8 +129,9 @@ public class ConnectionManagerUtils {
     public String networkTypeMapper(String networkMethodType) {
         String mappedNetworkType = null;
 
-        if (networkMethodType.equals("Open")) {
-            mappedNetworkType = ConnectionManagerUtils.OPEN;
+        // values inside .equals("value") method must match to values inside strings.xml <string-array name="network_methods_array">
+        if (networkMethodType.equals("OPEN")) {
+            mappedNetworkType = null; //ConnectionManagerUtils.OPEN;
         } else if (networkMethodType.equals("WEP")) {
             mappedNetworkType = ConnectionManagerUtils.WEP;
         } else if (networkMethodType.equals("WPA/WPA2")) {

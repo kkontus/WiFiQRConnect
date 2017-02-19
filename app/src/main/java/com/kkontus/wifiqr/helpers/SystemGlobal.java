@@ -26,19 +26,6 @@ public class SystemGlobal {
         inputManager.hideSoftInputFromWindow(fragment.getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
     }
 
-    public void handleSavingImage(Context context, Bitmap bitmap, String filename) {
-        // check permissions to write every time, also add saving to internal memory
-        if (isExternalStorageReadable() && isExternalStorageWritable()) {
-            Random generator = new Random();
-            int n = 10000;
-            n = generator.nextInt(n);
-            String filenameUnique = n + filename;
-            saveImageToExternalStorage(context, bitmap, filenameUnique);
-        } else {
-            System.out.println("Storage not writable");
-        }
-    }
-
     /* Checks if external storage is available for read and write */
     public boolean isExternalStorageWritable() {
         String state = Environment.getExternalStorageState();
@@ -56,6 +43,19 @@ public class SystemGlobal {
             return true;
         }
         return false;
+    }
+
+    public void handleSavingImage(Context context, Bitmap bitmap, String filename) {
+        // check permissions to write every time, also add saving to internal memory
+        if (isExternalStorageReadable() && isExternalStorageWritable()) {
+            Random generator = new Random();
+            int n = 10000;
+            n = generator.nextInt(n);
+            String filenameUnique = n + filename;
+            saveImageToExternalStorage(context, bitmap, filenameUnique);
+        } else {
+            System.out.println("Storage not writable");
+        }
     }
 
     private void saveImageToExternalStorage(Context context, Bitmap bitmap, String filename) {
