@@ -1,6 +1,6 @@
 package com.kkontus.wifiqr.interfaces;
 
-import android.net.Uri;
+import android.graphics.Bitmap;
 
 /**
  * This interface must be implemented by activities that contain this
@@ -13,6 +13,5 @@ import android.net.Uri;
  * >Communicating with Other Fragments</a> for more information.
  */
 public interface OnFragmentInteractionListener {
-    // TODO: Update argument type and name
-    void onFragmentInteraction(Uri uri);
+    void onImageLoaded(Bitmap bitmap);
 }

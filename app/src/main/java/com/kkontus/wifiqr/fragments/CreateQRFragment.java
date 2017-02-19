@@ -7,7 +7,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -120,6 +119,7 @@ public class CreateQRFragment extends Fragment {
                     drawSSIDAndPass(bitmap);
                     mQRCodeGeneratedBitmap = bitmap;
                     mImageViewGeneratedQR.setImageBitmap(bitmap);
+                    onImageLoaded(bitmap);
 
                     //requestPermission();
                     new SystemGlobal().handleSavingImage(getActivity(), bitmap, Config.SAVE_IMAGE_NAME);
@@ -202,10 +202,9 @@ public class CreateQRFragment extends Fragment {
         return paint;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
+    public void onImageLoaded(Bitmap bitmap) {
         if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+            mListener.onImageLoaded(bitmap);
         }
     }
 

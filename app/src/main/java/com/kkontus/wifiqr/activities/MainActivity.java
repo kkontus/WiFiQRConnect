@@ -1,6 +1,7 @@
 package com.kkontus.wifiqr.activities;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -19,6 +20,9 @@ import com.kkontus.wifiqr.R;
 import com.kkontus.wifiqr.adapters.ActionFragmentPagerAdapter;
 import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
 
+import java.io.File;
+import java.io.FileOutputStream;
+
 public class MainActivity extends AppCompatActivity implements OnFragmentInteractionListener {
 
     /**
@@ -36,6 +40,10 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
      */
     private ViewPager mViewPager;
 
+    private FloatingActionButton mFab;
+
+    private Bitmap mQRCodeLoadedBitmap;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +51,23 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mFab = (FloatingActionButton) findViewById(R.id.fab);
+        // hide mFab by default
+        mFab.hide();
+        mFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mQRCodeLoadedBitmap != null) {
+                    // share QR code image
+                    shareQRCodeBitmap(mQRCodeLoadedBitmap, "NetworkInfo");
+                } else {
+                    Snackbar snackbar = Snackbar.make(view, "Image must be loaded before sharing", Snackbar.LENGTH_LONG);
+                    snackbar.show();
+                }
+            }
+        });
+
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mActionFragmentPagerAdapter = new ActionFragmentPagerAdapter(getSupportFragmentManager());
@@ -56,13 +81,24 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         tabLayout.setupWithViewPager(mViewPager);
         tabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(this, R.color.colorPrimary));
         tabLayout.setSelectedTabIndicatorHeight((int) (4 * getResources().getDisplayMetrics().density));
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+            public void onTabSelected(TabLayout.Tab tab) {
+                if (tab.getPosition() == 1 || tab.getPosition() == 2) {
+                    mFab.show();
+                } else {
+                    mFab.hide();
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
             }
         });
 
@@ -93,8 +129,29 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
     }
 
     @Override
-    public void onFragmentInteraction(Uri uri) {
-        System.out.println("MainActivity onFragmentInteraction");
+    public void onImageLoaded(Bitmap bitmap) {
+        System.out.println("MainActivity onImageLoaded");
+
+        mQRCodeLoadedBitmap = bitmap;
+    }
+
+    private void shareQRCodeBitmap(Bitmap bitmap, String filename) {
+        try {
+            File file = new File(getCacheDir(), filename + ".jpeg");
+            FileOutputStream fOut = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
+            fOut.flush();
+            fOut.close();
+            file.setReadable(true, false);
+
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+            intent.setType("image/jpeg");
+            startActivity(Intent.createChooser(intent, getResources().getText(R.string.send_to)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

@@ -132,6 +132,7 @@ public class LoadQRFragment extends Fragment {
 
                     mQRCodeLoadedBitmap = bmp;
                     mImageViewLoadedQR.setImageBitmap(bmp);
+                    onImageLoaded(bmp);
                     Result result = imageUtils.readQRCodeImage(bmp);
                     if (result != null && result.getText() != null) {
                         mTextViewLoadedData.setText(result.getText());
@@ -162,10 +163,9 @@ public class LoadQRFragment extends Fragment {
         startActivityForResult(intent, RESULT_PICK_IMAGE);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
+    public void onImageLoaded(Bitmap bitmap) {
         if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+            mListener.onImageLoaded(bitmap);
         }
     }
 
