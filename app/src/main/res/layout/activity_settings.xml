@@ -10,4 +10,37 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.kkontus.wifiqr.activities.SettingsActivity">
 
+    <Switch
+        android:id="@+id/switchShowData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:text="@string/include_network_info"
+        android:textColor="@color/colorAccent"
+        android:textSize="16dp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/textViewSwitchStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/switchShowData"
+        android:textSize="12dp" />
+
+    <SeekBar
+        android:id="@+id/seekBarImageSize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/textViewSwitchStatus"
+        android:layout_marginTop="26dp"
+        android:max="2" />
+
+    <TextView
+        android:id="@+id/textViewSeekBarStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/seekBarImageSize"
+        android:textSize="12dp" />
+
 </RelativeLayout>

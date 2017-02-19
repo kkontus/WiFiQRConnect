@@ -24,6 +24,7 @@ import com.kkontus.wifiqr.R;
 import com.kkontus.wifiqr.helpers.Config;
 import com.kkontus.wifiqr.helpers.QRCodeFormatter;
 import com.kkontus.wifiqr.helpers.QRCodeSize;
+import com.kkontus.wifiqr.helpers.SharedPreferencesHelper;
 import com.kkontus.wifiqr.helpers.SystemGlobal;
 import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
 import com.kkontus.wifiqr.utils.ConnectionManagerUtils;
@@ -54,6 +55,8 @@ public class CreateQRFragment extends Fragment {
     private String mNetworkSSID;
     private String mNetworkPassword;
     private String mNetworkType;
+
+    private SharedPreferencesHelper mSharedPreferencesHelper;
 
     public CreateQRFragment() {
         // Required empty public constructor
@@ -113,10 +116,20 @@ public class CreateQRFragment extends Fragment {
                     new SystemGlobal().hideKeyboard(CreateQRFragment.this);
 
                     // start generating QR code
+                    mSharedPreferencesHelper = new SharedPreferencesHelper(getActivity());
+                    int imageSize = mSharedPreferencesHelper.getQrCodeImageSize();
+                    QRCodeSize qrCodeSize = getQrCodeImageSize(imageSize);
+
                     String content = new QRCodeFormatter().formatWiFiQRCode(mNetworkSSID, mNetworkPassword, mNetworkType);
+
                     ImageUtils imageUtils = new ImageUtils(getActivity());
-                    Bitmap bitmap = imageUtils.generateQRCode(content, QRCodeSize.LARGE);
-                    drawSSIDAndPass(bitmap);
+                    Bitmap bitmap = imageUtils.generateQRCode(content, qrCodeSize);
+
+                    boolean includeNetworkInfo = mSharedPreferencesHelper.getIncludeNetworkInfo();
+                    if (includeNetworkInfo) {
+                        drawSSIDAndPass(bitmap);
+                    }
+
                     mQRCodeGeneratedBitmap = bitmap;
                     mImageViewGeneratedQR.setImageBitmap(bitmap);
                     onImageLoaded(bitmap);
@@ -154,6 +167,19 @@ public class CreateQRFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @NonNull
+    private QRCodeSize getQrCodeImageSize(int imageSize) {
+        QRCodeSize qrCodeSize;
+        if (imageSize == 0) {
+            qrCodeSize = QRCodeSize.SMALL;
+        } else if (imageSize == 1) {
+            qrCodeSize = QRCodeSize.MEDIUM;
+        } else {
+            qrCodeSize = QRCodeSize.LARGE;
+        }
+        return qrCodeSize;
     }
 
     private void drawSSIDAndPass(Bitmap bitmap) {
