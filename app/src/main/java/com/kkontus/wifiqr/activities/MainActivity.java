@@ -1,5 +1,6 @@
 package com.kkontus.wifiqr.activities;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -81,8 +82,10 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
+        Intent intent;
         if (id == R.id.action_settings) {
+            intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
             return true;
         }
 
