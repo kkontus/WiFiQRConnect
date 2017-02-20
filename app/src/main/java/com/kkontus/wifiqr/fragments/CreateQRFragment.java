@@ -1,7 +1,10 @@
 package com.kkontus.wifiqr.fragments;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -9,6 +12,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -18,6 +23,8 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -30,9 +37,12 @@ import com.kkontus.wifiqr.helpers.QRCodeFormatter;
 import com.kkontus.wifiqr.helpers.QRCodeSize;
 import com.kkontus.wifiqr.helpers.SharedPreferencesHelper;
 import com.kkontus.wifiqr.helpers.SystemGlobal;
+import com.kkontus.wifiqr.interfaces.NetworkScanner;
 import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
 import com.kkontus.wifiqr.utils.ConnectionManagerUtils;
 import com.kkontus.wifiqr.utils.ImageUtils;
+
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -42,14 +52,14 @@ import com.kkontus.wifiqr.utils.ImageUtils;
  * Use the {@link CreateQRFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class CreateQRFragment extends Fragment {
+public class CreateQRFragment extends Fragment implements NetworkScanner {
     private static final String ARG_TAB_POSITION = "tabPosition";
     private int tabPosition;
     private OnFragmentInteractionListener mListener;
 
     // Create QR tab
     private LinearLayout mLinearLayoutForLoad;
-    private EditText mEditTextNetworkSSID;
+    private AutoCompleteTextView mAutoCompleteTextViewNetworkSSID;
     private EditText mEditTextNetworkPassword;
     private Spinner mSpinnerNetworkMethods;
     private Button mButtonGenerateQRCode;
@@ -64,6 +74,8 @@ public class CreateQRFragment extends Fragment {
     // general
     private SharedPreferencesHelper mSharedPreferencesHelper;
     private float mScale = 1.0f;
+    private BroadcastReceiver mWiFiReceiver;
+    private ArrayAdapter<String> mNetworkScanResultsArrayAdapter;
 
     public CreateQRFragment() {
         // Required empty public constructor
@@ -103,10 +115,10 @@ public class CreateQRFragment extends Fragment {
         mButtonGenerateQRCode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mEditTextNetworkSSID.getText().toString().trim().equals("")) {
-                    mEditTextNetworkSSID.setError(getString(R.string.required_ssid));
+                if (mAutoCompleteTextViewNetworkSSID.getText().toString().trim().equals("")) {
+                    mAutoCompleteTextViewNetworkSSID.setError(getString(R.string.required_ssid));
                 } else {
-                    mNetworkSSID = mEditTextNetworkSSID.getText().toString();
+                    mNetworkSSID = mAutoCompleteTextViewNetworkSSID.getText().toString();
                 }
 
                 if (mEditTextNetworkPassword.getText().toString().trim().equals("")) {
@@ -148,17 +160,20 @@ public class CreateQRFragment extends Fragment {
                     onImageLoaded(mQRCodeGeneratedBitmap);
 
                     // we need to request user permission for saving QR code image to external storage
-                    requestUserPermission();
+                    requestUserPermissionSaveToSDCard();
                 }
             }
         });
+
+        // we need to request user permission for loading available networks
+        requestUserPermissionNetworkScan();
 
         return view;
     }
 
     private void findViews(View view) {
         mLinearLayoutForLoad = (LinearLayout) view.findViewById(R.id.linearLayoutForLoad);
-        mEditTextNetworkSSID = (EditText) view.findViewById(R.id.editTextNetworkSSID);
+        mAutoCompleteTextViewNetworkSSID = (AutoCompleteTextView) view.findViewById(R.id.autoCompleteTextViewNetworkSSID);
         mEditTextNetworkPassword = (EditText) view.findViewById(R.id.editTextNetworkPassword);
         mSpinnerNetworkMethods = (Spinner) view.findViewById(R.id.spinnerNetworkMethods);
         mButtonGenerateQRCode = (Button) view.findViewById(R.id.buttonGenerateQRCode);
@@ -180,6 +195,13 @@ public class CreateQRFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+
+        System.out.println("onPause");
+        if (mWiFiReceiver != null) {
+            System.out.println("onPause unregisterReceiver");
+            getActivity().unregisterReceiver(mWiFiReceiver);
+            mWiFiReceiver = null;
+        }
     }
 
     @Override
@@ -198,10 +220,21 @@ public class CreateQRFragment extends Fragment {
                 }
                 return;
             }
+            case Config.REQUEST_ACCESS_COARSE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay! Do the task you need to do.
+                    handleScanningNetwork();
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
         }
     }
 
-    private void requestUserPermission() {
+    private void requestUserPermissionSaveToSDCard() {
         // check if user permission is already granted
         if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             // Should we show an explanation?
@@ -291,7 +324,7 @@ public class CreateQRFragment extends Fragment {
 
     @NonNull
     private Paint getPaintSettings(float textSize) {
-        // new antialised Paint
+        // new anti aliased Paint
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         // text color
         paint.setColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
@@ -309,6 +342,79 @@ public class CreateQRFragment extends Fragment {
         if (mListener != null) {
             mListener.onImageLoaded(bitmap);
         }
+    }
+
+    private void requestUserPermissionNetworkScan() {
+        // check if user permission is already granted
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+                Snackbar.make(getActivity().getWindow().getDecorView().getRootView(), getString(R.string.scan_network_permission_rationale), Snackbar.LENGTH_INDEFINITE).setAction(android.R.string.ok, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Request the permission again.
+                        // Don't use ActivityCompat.requestPermissions since it goes through parent
+                        // activity and we don't need that, so we need to use requestPermissions
+                        requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, Config.REQUEST_ACCESS_COARSE_LOCATION);
+                    }
+                }).show();
+            } else {
+                // No explanation needed, we can request the permission.
+                // Don't use ActivityCompat.requestPermissions since it goes through parent
+                // activity and we don't need that, so we need to use requestPermissions
+                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, Config.REQUEST_ACCESS_COARSE_LOCATION);
+            }
+        } else {
+            // user permission has already been granted so we can continue with saving the image
+            handleScanningNetwork();
+        }
+    }
+
+    @Override
+    public void onScanFinished(List<ScanResult> scanResults) {
+        System.out.println("Read Fragment onScanFinished");
+
+        String[] listOfAvailableNetworks = new String[scanResults.size()];
+        for (int i = 0; i < scanResults.size(); i++) {
+            listOfAvailableNetworks[i] = scanResults.get(i).SSID;
+            System.out.println(scanResults.get(i).SSID);
+        }
+
+        mNetworkScanResultsArrayAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, listOfAvailableNetworks);
+        mNetworkScanResultsArrayAdapter.notifyDataSetChanged();
+        mAutoCompleteTextViewNetworkSSID.setAdapter(mNetworkScanResultsArrayAdapter);
+    }
+
+    private void handleScanningNetwork() {
+        // turn on WiFi if not already enabled
+        final WifiManager wifiManager = (WifiManager) getActivity().getSystemService(Context.WIFI_SERVICE);
+        boolean wifiEnabled = wifiManager.isWifiEnabled();
+        if (!wifiEnabled) {
+            wifiManager.setWifiEnabled(true);
+        }
+
+        final CreateQRFragment readQRFragment = this;
+
+        if (mWiFiReceiver == null) {
+            mWiFiReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
+                        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+                        List<ScanResult> scanResults = wifiManager.getScanResults();
+
+                        readQRFragment.onScanFinished(scanResults);
+                    }
+                }
+            };
+
+            getActivity().registerReceiver(mWiFiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        }
+        wifiManager.startScan();
     }
 
 }
