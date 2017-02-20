@@ -1,6 +1,8 @@
 package com.kkontus.wifiqr.fragments;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -9,6 +11,8 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
@@ -52,10 +56,12 @@ public class CreateQRFragment extends Fragment {
     private ImageView mImageViewGeneratedQR;
     private Bitmap mQRCodeGeneratedBitmap;
 
+    // network credentials properties
     private String mNetworkSSID;
     private String mNetworkPassword;
     private String mNetworkType;
 
+    // general
     private SharedPreferencesHelper mSharedPreferencesHelper;
 
     public CreateQRFragment() {
@@ -124,18 +130,18 @@ public class CreateQRFragment extends Fragment {
 
                     ImageUtils imageUtils = new ImageUtils(getActivity());
                     Bitmap bitmap = imageUtils.generateQRCode(content, qrCodeSize);
+                    mQRCodeGeneratedBitmap = bitmap;
 
                     boolean includeNetworkInfo = mSharedPreferencesHelper.getIncludeNetworkInfo();
                     if (includeNetworkInfo) {
-                        drawSSIDAndPass(bitmap);
+                        drawSSIDAndPass(mQRCodeGeneratedBitmap);
                     }
 
-                    mQRCodeGeneratedBitmap = bitmap;
-                    mImageViewGeneratedQR.setImageBitmap(bitmap);
-                    onImageLoaded(bitmap);
+                    mImageViewGeneratedQR.setImageBitmap(mQRCodeGeneratedBitmap);
+                    onImageLoaded(mQRCodeGeneratedBitmap);
 
-                    //requestPermission();
-                    new SystemGlobal().handleSavingImage(getActivity(), bitmap, Config.SAVE_IMAGE_NAME);
+                    // we need to request user permission for saving QR code image to external storage
+                    requestUserPermission();
                 }
             }
         });
@@ -167,6 +173,59 @@ public class CreateQRFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        switch (requestCode) {
+            case Config.REQUEST_WRITE_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay! Do the task you need to do.
+                    handleSavingImage();
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+        }
+    }
+
+    private void requestUserPermission() {
+        // check if user permission is already granted
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+                Snackbar.make(getActivity().getWindow().getDecorView().getRootView(), getString(R.string.save_image_permission_rationale), Snackbar.LENGTH_INDEFINITE).setAction(android.R.string.ok, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Request the permission again.
+                        // Don't use ActivityCompat.requestPermissions since it goes through parent
+                        // activity and we don't need that, so we need to use requestPermissions
+                        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Config.REQUEST_WRITE_EXTERNAL_STORAGE);
+                    }
+                }).show();
+            } else {
+                // No explanation needed, we can request the permission.
+                // Don't use ActivityCompat.requestPermissions since it goes through parent
+                // activity and we don't need that, so we need to use requestPermissions
+                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Config.REQUEST_WRITE_EXTERNAL_STORAGE);
+            }
+        } else {
+            // user permission has already been granted so we can continue with saving the image
+            handleSavingImage();
+        }
+    }
+
+    private void handleSavingImage() {
+        new SystemGlobal().handleSavingImage(getActivity(), mQRCodeGeneratedBitmap, Config.SAVE_IMAGE_NAME);
     }
 
     @NonNull

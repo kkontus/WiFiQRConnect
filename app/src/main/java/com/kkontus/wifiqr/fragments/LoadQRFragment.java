@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.google.zxing.Result;
 import com.kkontus.wifiqr.R;
+import com.kkontus.wifiqr.helpers.Config;
 import com.kkontus.wifiqr.helpers.QRCodeFormatter;
 import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
 import com.kkontus.wifiqr.utils.ConnectionManagerUtils;
@@ -45,7 +46,6 @@ public class LoadQRFragment extends Fragment {
     private ImageView mImageViewLoadedQR;
 
     private Bitmap mQRCodeLoadedBitmap;
-    private static final int RESULT_PICK_IMAGE = 1234;
 
     public LoadQRFragment() {
         // Required empty public constructor
@@ -122,18 +122,18 @@ public class LoadQRFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
 
         switch (requestCode) {
-            case RESULT_PICK_IMAGE:
+            case Config.RESULT_PICK_IMAGE:
                 if (resultCode == Activity.RESULT_OK) {
                     Uri uri = data.getData();
 
                     ImageUtils imageUtils = new ImageUtils(getActivity());
                     Bitmap immutableBitmap = imageUtils.getBitmapFromUri(uri);
-                    Bitmap bmp = immutableBitmap.copy(Bitmap.Config.RGB_565, true);
+                    Bitmap bitmap = immutableBitmap.copy(Bitmap.Config.RGB_565, true);
+                    mQRCodeLoadedBitmap = bitmap;
 
-                    mQRCodeLoadedBitmap = bmp;
-                    mImageViewLoadedQR.setImageBitmap(bmp);
-                    onImageLoaded(bmp);
-                    Result result = imageUtils.readQRCodeImage(bmp);
+                    mImageViewLoadedQR.setImageBitmap(mQRCodeLoadedBitmap);
+                    onImageLoaded(mQRCodeLoadedBitmap);
+                    Result result = imageUtils.readQRCodeImage(mQRCodeLoadedBitmap);
                     if (result != null && result.getText() != null) {
                         mTextViewLoadedData.setText(result.getText());
 
@@ -160,7 +160,7 @@ public class LoadQRFragment extends Fragment {
     private void launchImagePicker() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         intent.setType("image/*");
-        startActivityForResult(intent, RESULT_PICK_IMAGE);
+        startActivityForResult(intent, Config.RESULT_PICK_IMAGE);
     }
 
     public void onImageLoaded(Bitmap bitmap) {

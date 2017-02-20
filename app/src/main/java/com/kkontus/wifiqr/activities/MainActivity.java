@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
                     // share QR code image
                     shareQRCodeBitmap(mQRCodeLoadedBitmap, "NetworkInfo");
                 } else {
-                    Snackbar snackbar = Snackbar.make(view, "Image must be loaded before sharing", Snackbar.LENGTH_LONG);
+                    Snackbar snackbar = Snackbar.make(view, getString(R.string.share_image_not_empty), Snackbar.LENGTH_LONG);
                     snackbar.show();
                 }
             }

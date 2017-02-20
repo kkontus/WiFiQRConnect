@@ -20,6 +20,8 @@
     <string name="image_small">Small</string>
     <string name="image_medium">Medium</string>
     <string name="image_large">Large</string>
+    <string name="save_image_permission_rationale">Proceed to allow SD card write permission to store QR code</string>
+    <string name="share_image_not_empty">Image must be loaded before sharing</string>
 
     <string-array name="network_methods_array">
         <item>OPEN</item>
