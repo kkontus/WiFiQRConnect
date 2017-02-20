@@ -63,6 +63,7 @@ public class CreateQRFragment extends Fragment {
 
     // general
     private SharedPreferencesHelper mSharedPreferencesHelper;
+    private float mScale = 1.0f;
 
     public CreateQRFragment() {
         // Required empty public constructor
@@ -132,9 +133,15 @@ public class CreateQRFragment extends Fragment {
                     Bitmap bitmap = imageUtils.generateQRCode(content, qrCodeSize);
                     mQRCodeGeneratedBitmap = bitmap;
 
+                    // get display density
+                    mScale = getResources().getDisplayMetrics().density;
+                    mImageViewGeneratedQR.getLayoutParams().width = (int) (mQRCodeGeneratedBitmap.getWidth() * mScale);
+                    mImageViewGeneratedQR.getLayoutParams().height = (int) (mQRCodeGeneratedBitmap.getHeight() * mScale);
+                    mImageViewGeneratedQR.requestLayout();
+
                     boolean includeNetworkInfo = mSharedPreferencesHelper.getIncludeNetworkInfo();
                     if (includeNetworkInfo) {
-                        drawSSIDAndPass(mQRCodeGeneratedBitmap);
+                        drawSSIDAndPass(mQRCodeGeneratedBitmap, qrCodeSize);
                     }
 
                     mImageViewGeneratedQR.setImageBitmap(mQRCodeGeneratedBitmap);
@@ -241,13 +248,27 @@ public class CreateQRFragment extends Fragment {
         return qrCodeSize;
     }
 
-    private void drawSSIDAndPass(Bitmap bitmap) {
+    private float getDrawTextSize(QRCodeSize outputImageSize) {
+        float textSize;
+        if (outputImageSize == QRCodeSize.SMALL) {
+            textSize = 3.5f;
+        } else if (outputImageSize == QRCodeSize.MEDIUM) {
+            textSize = 6.5f;
+        } else {
+            textSize = 10.0f;
+        }
+        return textSize;
+    }
+
+    private void drawSSIDAndPass(Bitmap bitmap, QRCodeSize outputImageSize) {
+        float textSize = getDrawTextSize(outputImageSize);
+
         Canvas canvas = new Canvas(bitmap);
         Rect bounds = new Rect();
 
         // draw text for network ssid and network password
-        drawNetworkSSID(canvas, bitmap, bounds, 10, mNetworkSSID);
-        drawNetworkPassword(canvas, bitmap, bounds, 8, mNetworkPassword);
+        drawNetworkSSID(canvas, bitmap, bounds, textSize, mNetworkSSID);
+        drawNetworkPassword(canvas, bitmap, bounds, textSize, mNetworkPassword);
     }
 
     private void drawNetworkSSID(Canvas canvas, Bitmap bitmap, Rect bounds, float textSize, String textToDraw) {
@@ -256,7 +277,7 @@ public class CreateQRFragment extends Fragment {
         paint.getTextBounds(textToDraw, 0, textToDraw.length(), bounds);
 
         int x = (bitmap.getWidth() - bounds.width()) / 2;
-        canvas.drawText(textToDraw, x, 35, paint);
+        canvas.drawText(textToDraw, x, textSize * mScale, paint);
     }
 
     private void drawNetworkPassword(Canvas canvas, Bitmap bitmap, Rect bounds, float textSize, String textToDraw) {
@@ -270,15 +291,12 @@ public class CreateQRFragment extends Fragment {
 
     @NonNull
     private Paint getPaintSettings(float textSize) {
-        // get display density
-        float scale = getResources().getDisplayMetrics().density;
-
         // new antialised Paint
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         // text color
         paint.setColor(ContextCompat.getColor(getActivity(), R.color.colorAccent));
         // text size in pixels
-        paint.setTextSize((int) (textSize * scale));
+        paint.setTextSize(textSize * mScale);
         // text bold
         paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
         // text shadow
