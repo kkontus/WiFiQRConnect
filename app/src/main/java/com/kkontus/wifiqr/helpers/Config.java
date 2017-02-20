@@ -11,4 +11,5 @@ public class Config {
     // request results
     public static final int RESULT_PICK_IMAGE = 1234;
     public static final int REQUEST_WRITE_EXTERNAL_STORAGE = 2345;
+    public static final int REQUEST_ACCESS_COARSE_LOCATION = 3456;
 }
