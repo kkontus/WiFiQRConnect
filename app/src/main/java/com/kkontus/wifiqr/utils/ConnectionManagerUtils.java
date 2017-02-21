@@ -20,6 +20,9 @@ public class ConnectionManagerUtils {
     public static final String NETWORK_SSID = "networkSSID";
     public static final String NETWORK_PASSWORD = "networkPassword";
     public static final String NETWORK_TYPE = "networkType";
+    public static final String DROPDOWN_VALUE_OPEN = "OPEN";
+    public static final String DROPDOWN_VALUE_WEP = "WEP";
+    public static final String DROPDOWN_VALUE_WPA = "WPA/WPA2";
 
     public ConnectionManagerUtils() {
 
@@ -130,11 +133,11 @@ public class ConnectionManagerUtils {
         String mappedNetworkType = null;
 
         // values inside .equals("value") method must match to values inside strings.xml <string-array name="network_methods_array">
-        if (networkMethodType.equals("OPEN")) {
-            mappedNetworkType = null; //ConnectionManagerUtils.OPEN;
-        } else if (networkMethodType.equals("WEP")) {
+        if (networkMethodType.equals(DROPDOWN_VALUE_OPEN)) {
+            mappedNetworkType = null;
+        } else if (networkMethodType.equals(DROPDOWN_VALUE_WEP)) {
             mappedNetworkType = ConnectionManagerUtils.WEP;
-        } else if (networkMethodType.equals("WPA/WPA2")) {
+        } else if (networkMethodType.equals(DROPDOWN_VALUE_WPA)) {
             mappedNetworkType = ConnectionManagerUtils.WPA;
         }
 

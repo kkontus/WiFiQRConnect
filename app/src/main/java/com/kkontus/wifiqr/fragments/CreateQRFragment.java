@@ -33,6 +33,7 @@ import android.widget.Spinner;
 
 import com.kkontus.wifiqr.R;
 import com.kkontus.wifiqr.adapters.NetworkScanArrayAdapter;
+import com.kkontus.wifiqr.adapters.NetworkSecurityMethodsArrayAdapter;
 import com.kkontus.wifiqr.helpers.Config;
 import com.kkontus.wifiqr.helpers.QRCodeFormatter;
 import com.kkontus.wifiqr.helpers.QRCodeSize;
@@ -43,6 +44,7 @@ import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
 import com.kkontus.wifiqr.utils.ConnectionManagerUtils;
 import com.kkontus.wifiqr.utils.ImageUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -123,6 +125,14 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
                 }
             }
         });
+
+        List<String> networkMethods = new ArrayList<>();
+        networkMethods.add(ConnectionManagerUtils.DROPDOWN_VALUE_OPEN);
+        networkMethods.add(ConnectionManagerUtils.DROPDOWN_VALUE_WEP);
+        networkMethods.add(ConnectionManagerUtils.DROPDOWN_VALUE_WPA);
+        NetworkSecurityMethodsArrayAdapter adapter = new NetworkSecurityMethodsArrayAdapter(getActivity(), R.layout.spinner_item, networkMethods);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mSpinnerNetworkMethods.setAdapter(adapter);
 
         mButtonGenerateQRCode.setOnClickListener(new View.OnClickListener() {
             @Override
