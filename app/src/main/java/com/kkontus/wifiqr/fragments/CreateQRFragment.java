@@ -120,8 +120,9 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 ScanResult scanResultFromAdapter = (ScanResult) adapterView.getAdapter().getItem(i);
-                if (scanResultFromAdapter != null) {
+                if (scanResultFromAdapter != null && scanResultFromAdapter.SSID != null) {
                     mAutoCompleteTextViewNetworkSSID.setText(scanResultFromAdapter.SSID);
+                    mAutoCompleteTextViewNetworkSSID.setSelection(scanResultFromAdapter.SSID.length());
                 }
             }
         });
