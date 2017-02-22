@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.zxing.integration.android.IntentIntegrator;
@@ -34,7 +33,6 @@ public class ReadQRFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     // Read QR tab
-    private LinearLayout mLinearLayoutForRead;
     private Button mButtonScanQRCode;
     private TextView mTextViewConnectionStatus;
     private TextView mTextViewConnectionData;
@@ -89,7 +87,6 @@ public class ReadQRFragment extends Fragment {
     }
 
     private void findViews(View view) {
-        mLinearLayoutForRead = (LinearLayout) view.findViewById(R.id.linearLayoutForRead);
         mButtonScanQRCode = (Button) view.findViewById(R.id.buttonScanQRCode);
         mTextViewConnectionStatus = (TextView) view.findViewById(R.id.textViewConnectionStatus);
         mTextViewConnectionData = (TextView) view.findViewById(R.id.textViewConnectionData);

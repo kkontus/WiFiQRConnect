@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.zxing.Result;
@@ -40,7 +39,6 @@ public class LoadQRFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     // Load QR tab
-    private LinearLayout mLinearLayoutForLoad;
     private Button mButtonLoadQRCode;
     private TextView mTextViewLoadedData;
     private ImageView mImageViewLoadedQR;
@@ -94,7 +92,6 @@ public class LoadQRFragment extends Fragment {
     }
 
     private void findViews(View view) {
-        mLinearLayoutForLoad = (LinearLayout) view.findViewById(R.id.linearLayoutForLoad);
         mButtonLoadQRCode = (Button) view.findViewById(R.id.buttonLoadQRCode);
         mTextViewLoadedData = (TextView) view.findViewById(R.id.textViewLoadedData);
         mImageViewLoadedQR = (ImageView) view.findViewById(R.id.imageViewLoadedQR);

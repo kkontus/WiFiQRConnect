@@ -28,7 +28,6 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 
 import com.kkontus.wifiqr.R;
@@ -61,7 +60,6 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
     private OnFragmentInteractionListener mListener;
 
     // Create QR tab
-    private LinearLayout mLinearLayoutForLoad;
     private AutoCompleteTextView mAutoCompleteTextViewNetworkSSID;
     private EditText mEditTextNetworkPassword;
     private Spinner mSpinnerNetworkMethods;
@@ -195,7 +193,6 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
     }
 
     private void findViews(View view) {
-        mLinearLayoutForLoad = (LinearLayout) view.findViewById(R.id.linearLayoutForLoad);
         mAutoCompleteTextViewNetworkSSID = (AutoCompleteTextView) view.findViewById(R.id.autoCompleteTextViewNetworkSSID);
         mEditTextNetworkPassword = (EditText) view.findViewById(R.id.editTextNetworkPassword);
         mSpinnerNetworkMethods = (Spinner) view.findViewById(R.id.spinnerNetworkMethods);
