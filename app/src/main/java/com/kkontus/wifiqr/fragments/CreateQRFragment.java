@@ -124,6 +124,7 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
                 }
             }
         });
+        mAutoCompleteTextViewNetworkSSID.setThreshold(1);
 
         List<String> networkMethods = new ArrayList<>();
         networkMethods.add(ConnectionManagerUtils.DROPDOWN_VALUE_OPEN);

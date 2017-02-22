@@ -8,9 +8,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Filter;
 import android.widget.TextView;
 
 import com.kkontus.wifiqr.R;
+import com.kkontus.wifiqr.filters.NeworkScanFilter;
 
 import java.util.List;
 
@@ -36,6 +38,12 @@ public class NetworkScanArrayAdapter extends ArrayAdapter {
     @Override
     public long getItemId(int position) {
         return super.getItemId(position);
+    }
+
+    @NonNull
+    @Override
+    public Filter getFilter() {
+        return new NeworkScanFilter(this, mScanResults);
     }
 
     @NonNull
