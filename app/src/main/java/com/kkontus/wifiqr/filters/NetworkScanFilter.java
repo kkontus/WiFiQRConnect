@@ -1,20 +1,20 @@
 package com.kkontus.wifiqr.filters;
 
-import android.net.wifi.ScanResult;
 import android.widget.Filter;
 
+import com.kkontus.wifiqr.models.Network;
 import com.kkontus.wifiqr.adapters.NetworkScanArrayAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class NeworkScanFilter extends Filter {
+public class NetworkScanFilter extends Filter {
     private NetworkScanArrayAdapter mNetworkScanArrayAdapter;
-    private List<ScanResult> mScanResults;
-    private List<ScanResult> mSuggestions;
-    private List<ScanResult> mTempScanResults;
+    private List<Network> mScanResults;
+    private List<Network> mSuggestions;
+    private List<Network> mTempScanResults;
 
-    public NeworkScanFilter(NetworkScanArrayAdapter networkScanArrayAdapter, List<ScanResult> objects) {
+    public NetworkScanFilter(NetworkScanArrayAdapter networkScanArrayAdapter, List<Network> objects) {
         this.mNetworkScanArrayAdapter = networkScanArrayAdapter;
         this.mScanResults = objects;
         this.mTempScanResults = new ArrayList<>(mScanResults);
@@ -26,8 +26,8 @@ public class NeworkScanFilter extends Filter {
         if (charSequence != null) {
             mSuggestions.clear();
 
-            for (ScanResult scanResult : mTempScanResults) {
-                if (scanResult.SSID.toLowerCase().contains(charSequence.toString().toLowerCase())) {
+            for (Network scanResult : mTempScanResults) {
+                if (scanResult.getSSID().toLowerCase().contains(charSequence.toString().toLowerCase())) {
                     mSuggestions.add(scanResult);
                 }
             }
@@ -44,11 +44,11 @@ public class NeworkScanFilter extends Filter {
 
     @Override
     protected void publishResults(CharSequence charSequence, FilterResults filterResults) {
-        List<ScanResult> scanResults = (List<ScanResult>) filterResults.values;
+        List<Network> scanResults = (List<Network>) filterResults.values;
         if (filterResults != null && filterResults.count > 0) {
             mNetworkScanArrayAdapter.clear();
 
-            for (ScanResult scanResult : scanResults) {
+            for (Network scanResult : scanResults) {
                 mNetworkScanArrayAdapter.add(scanResult);
                 mNetworkScanArrayAdapter.notifyDataSetChanged();
             }
@@ -57,7 +57,7 @@ public class NeworkScanFilter extends Filter {
 
     @Override
     public CharSequence convertResultToString(Object resultValue) {
-        return ((ScanResult) resultValue).SSID;
+        return ((Network) resultValue).getSSID();
     }
 
 }

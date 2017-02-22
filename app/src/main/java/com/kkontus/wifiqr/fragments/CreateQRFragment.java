@@ -30,6 +30,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 
+import com.kkontus.wifiqr.models.Network;
 import com.kkontus.wifiqr.R;
 import com.kkontus.wifiqr.adapters.NetworkScanArrayAdapter;
 import com.kkontus.wifiqr.adapters.NetworkSecurityMethodsArrayAdapter;
@@ -76,8 +77,8 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
     private SharedPreferencesHelper mSharedPreferencesHelper;
     private float mScale = 1.0f;
     private BroadcastReceiver mWiFiReceiver;
-    // private ArrayAdapter<String> mNetworkScanResultsArrayAdapter;
     private NetworkScanArrayAdapter mNetworkScanResultsArrayAdapter;
+    private List<Network> mScanResults = new ArrayList<>();
 
     public CreateQRFragment() {
         // Required empty public constructor
@@ -117,10 +118,10 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
         mAutoCompleteTextViewNetworkSSID.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                ScanResult scanResultFromAdapter = (ScanResult) adapterView.getAdapter().getItem(i);
-                if (scanResultFromAdapter != null && scanResultFromAdapter.SSID != null) {
-                    mAutoCompleteTextViewNetworkSSID.setText(scanResultFromAdapter.SSID);
-                    mAutoCompleteTextViewNetworkSSID.setSelection(scanResultFromAdapter.SSID.length());
+                Network scanResultFromAdapter = (Network) adapterView.getAdapter().getItem(i);
+                if (scanResultFromAdapter != null && scanResultFromAdapter.getSSID() != null) {
+                    mAutoCompleteTextViewNetworkSSID.setText(scanResultFromAdapter.getSSID());
+                    mAutoCompleteTextViewNetworkSSID.setSelection(scanResultFromAdapter.getSSID().length());
                 }
             }
         });
@@ -399,18 +400,15 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
     public void onScanFinished(List<ScanResult> scanResults) {
         System.out.println("Read Fragment onScanFinished");
 
-        mNetworkScanResultsArrayAdapter = new NetworkScanArrayAdapter(getActivity(), R.layout.autocomplete_item, scanResults);
-        mAutoCompleteTextViewNetworkSSID.setAdapter(mNetworkScanResultsArrayAdapter);
+        for (ScanResult scanResult : scanResults) {
+            Network network = new Network();
+            network.setSSID(scanResult.SSID);
+            mScanResults.add(network);
+            System.out.println(network.getSSID());
+        }
 
-//        String[] listOfAvailableNetworks = new String[scanResults.size()];
-//        for (int i = 0; i < scanResults.size(); i++) {
-//            listOfAvailableNetworks[i] = scanResults.get(i).SSID;
-//            System.out.println(scanResults.get(i).SSID);
-//        }
-//
-//        mNetworkScanResultsArrayAdapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, listOfAvailableNetworks);
-//        mNetworkScanResultsArrayAdapter.notifyDataSetChanged();
-//        mAutoCompleteTextViewNetworkSSID.setAdapter(mNetworkScanResultsArrayAdapter);
+        mNetworkScanResultsArrayAdapter = new NetworkScanArrayAdapter(getActivity(), R.layout.autocomplete_item, mScanResults);
+        mAutoCompleteTextViewNetworkSSID.setAdapter(mNetworkScanResultsArrayAdapter);
     }
 
     private void handleScanningNetwork() {

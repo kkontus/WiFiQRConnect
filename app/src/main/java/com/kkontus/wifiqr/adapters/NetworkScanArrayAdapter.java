@@ -1,7 +1,6 @@
 package com.kkontus.wifiqr.adapters;
 
 import android.content.Context;
-import android.net.wifi.ScanResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -11,17 +10,18 @@ import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.TextView;
 
+import com.kkontus.wifiqr.models.Network;
 import com.kkontus.wifiqr.R;
-import com.kkontus.wifiqr.filters.NeworkScanFilter;
+import com.kkontus.wifiqr.filters.NetworkScanFilter;
 
 import java.util.List;
 
 public class NetworkScanArrayAdapter extends ArrayAdapter {
     private Context mContext;
     private int mResource;
-    private List<ScanResult> mScanResults;
+    private List<Network> mScanResults;
 
-    public NetworkScanArrayAdapter(Context context, int resource, List<ScanResult> objects) {
+    public NetworkScanArrayAdapter(Context context, int resource, List<Network> objects) {
         super(context, resource, objects);
 
         this.mContext = context;
@@ -31,7 +31,7 @@ public class NetworkScanArrayAdapter extends ArrayAdapter {
 
     @Nullable
     @Override
-    public ScanResult getItem(int position) {
+    public Network getItem(int position) {
         return mScanResults.get(position);
     }
 
@@ -43,7 +43,7 @@ public class NetworkScanArrayAdapter extends ArrayAdapter {
     @NonNull
     @Override
     public Filter getFilter() {
-        return new NeworkScanFilter(this, mScanResults);
+        return new NetworkScanFilter(this, mScanResults);
     }
 
     @NonNull
@@ -64,9 +64,9 @@ public class NetworkScanArrayAdapter extends ArrayAdapter {
             viewHolder = (ViewHolder) view.getTag();
         }
 
-        ScanResult scanResult = mScanResults.get(position);
-        if (scanResult != null && scanResult.SSID != null) {
-            viewHolder.networkSSID.setText(scanResult.SSID.toString());
+        Network scanResult = mScanResults.get(position);
+        if (scanResult != null && scanResult.getSSID() != null) {
+            viewHolder.networkSSID.setText(scanResult.getSSID().toString());
         }
 
         return view;
