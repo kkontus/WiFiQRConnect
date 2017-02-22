@@ -24,13 +24,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 
-import com.kkontus.wifiqr.models.Network;
 import com.kkontus.wifiqr.R;
 import com.kkontus.wifiqr.adapters.NetworkScanArrayAdapter;
 import com.kkontus.wifiqr.adapters.NetworkSecurityMethodsArrayAdapter;
@@ -41,8 +39,10 @@ import com.kkontus.wifiqr.helpers.SharedPreferencesHelper;
 import com.kkontus.wifiqr.helpers.SystemGlobal;
 import com.kkontus.wifiqr.interfaces.NetworkScanner;
 import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
+import com.kkontus.wifiqr.models.Network;
 import com.kkontus.wifiqr.utils.ConnectionManagerUtils;
 import com.kkontus.wifiqr.utils.ImageUtils;
+import com.kkontus.wifiqr.views.InstantAutoComplete;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +61,7 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
     private OnFragmentInteractionListener mListener;
 
     // Create QR tab
-    private AutoCompleteTextView mAutoCompleteTextViewNetworkSSID;
+    private InstantAutoComplete mAutoCompleteTextViewNetworkSSID;
     private EditText mEditTextNetworkPassword;
     private Spinner mSpinnerNetworkMethods;
     private Button mButtonGenerateQRCode;
@@ -114,6 +114,9 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_create_qr, container, false);
         findViews(view);
+
+        // this is just mock that will show open dropdown
+        initializeNetworkScanAdapter();
 
         mAutoCompleteTextViewNetworkSSID.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -195,7 +198,7 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
     }
 
     private void findViews(View view) {
-        mAutoCompleteTextViewNetworkSSID = (AutoCompleteTextView) view.findViewById(R.id.autoCompleteTextViewNetworkSSID);
+        mAutoCompleteTextViewNetworkSSID = (InstantAutoComplete) view.findViewById(R.id.autoCompleteTextViewNetworkSSID);
         mEditTextNetworkPassword = (EditText) view.findViewById(R.id.editTextNetworkPassword);
         mSpinnerNetworkMethods = (Spinner) view.findViewById(R.id.spinnerNetworkMethods);
         mButtonGenerateQRCode = (Button) view.findViewById(R.id.buttonGenerateQRCode);
@@ -400,15 +403,36 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
     public void onScanFinished(List<ScanResult> scanResults) {
         System.out.println("Read Fragment onScanFinished");
 
+        List<Network> loadedNetworks = new ArrayList<>();
         for (ScanResult scanResult : scanResults) {
             Network network = new Network();
             network.setSSID(scanResult.SSID);
-            mScanResults.add(network);
-            System.out.println(network.getSSID());
+            loadedNetworks.add(network);
         }
+        reloadNetworkScanAdapter(loadedNetworks);
+    }
 
-        mNetworkScanResultsArrayAdapter = new NetworkScanArrayAdapter(getActivity(), R.layout.autocomplete_item, mScanResults);
+    private void initializeNetworkScanAdapter() {
+        List<Network> loadingNetworks = new ArrayList<>();
+        Network network = new Network();
+        network.setSSID("Loading...");
+        loadingNetworks.add(network);
+        setNetworkScanAdapter(loadingNetworks);
+    }
+
+    private void setNetworkScanAdapter(List<Network> scanResults) {
+        mNetworkScanResultsArrayAdapter = new NetworkScanArrayAdapter(getActivity(), R.layout.autocomplete_item, scanResults);
         mAutoCompleteTextViewNetworkSSID.setAdapter(mNetworkScanResultsArrayAdapter);
+    }
+
+    private void reloadNetworkScanAdapter(List<Network> scanResults) {
+        // mScanResults.clear(); // no need for this
+        mScanResults = scanResults; // set scanned networks to class property
+
+        mNetworkScanResultsArrayAdapter.clear();
+        mNetworkScanResultsArrayAdapter.addAll(mScanResults); // set in the line above
+        mAutoCompleteTextViewNetworkSSID.setAdapter(mNetworkScanResultsArrayAdapter);
+        mNetworkScanResultsArrayAdapter.notifyDataSetChanged();
     }
 
     private void handleScanningNetwork() {

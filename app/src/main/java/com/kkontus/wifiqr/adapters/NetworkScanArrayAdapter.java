@@ -10,9 +10,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.TextView;
 
-import com.kkontus.wifiqr.models.Network;
 import com.kkontus.wifiqr.R;
 import com.kkontus.wifiqr.filters.NetworkScanFilter;
+import com.kkontus.wifiqr.models.Network;
 
 import java.util.List;
 

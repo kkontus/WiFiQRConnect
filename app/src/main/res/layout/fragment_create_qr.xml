@@ -15,7 +15,7 @@
         android:paddingTop="@dimen/activity_vertical_margin"
         tools:context="com.kkontus.wifiqr.fragments.CreateQRFragment">
 
-        <AutoCompleteTextView
+        <com.kkontus.wifiqr.views.InstantAutoComplete
             android:id="@+id/autoCompleteTextViewNetworkSSID"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
