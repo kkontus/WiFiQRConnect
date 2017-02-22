@@ -39,9 +39,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
-
     private FloatingActionButton mFab;
-
     private Bitmap mQRCodeLoadedBitmap;
 
     @Override
@@ -70,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
-        mActionFragmentPagerAdapter = new ActionFragmentPagerAdapter(getSupportFragmentManager());
+        mActionFragmentPagerAdapter = new ActionFragmentPagerAdapter(getSupportFragmentManager(), this);
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
