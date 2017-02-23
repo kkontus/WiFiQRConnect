@@ -17,11 +17,15 @@ import java.util.Random;
 public class SystemGlobal {
 
     public void hideKeyboard(Activity activity) {
+        if (activity == null || activity.getCurrentFocus() == null || activity.getCurrentFocus().getWindowToken() == null) return;
+
         InputMethodManager inputManager = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         inputManager.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
     }
 
     public void hideKeyboard(Fragment fragment) {
+        if (fragment == null || fragment.getActivity() == null || fragment.getActivity().getCurrentFocus() == null || fragment.getActivity().getCurrentFocus().getWindowToken() == null) return;
+
         InputMethodManager inputManager = (InputMethodManager) fragment.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         inputManager.hideSoftInputFromWindow(fragment.getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
     }
