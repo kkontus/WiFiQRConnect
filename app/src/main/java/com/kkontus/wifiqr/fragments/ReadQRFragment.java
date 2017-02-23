@@ -62,6 +62,18 @@ public class ReadQRFragment extends Fragment {
     }
 
     @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
@@ -90,18 +102,6 @@ public class ReadQRFragment extends Fragment {
         mButtonScanQRCode = (Button) view.findViewById(R.id.buttonScanQRCode);
         mTextViewConnectionStatus = (TextView) view.findViewById(R.id.textViewConnectionStatus);
         mTextViewConnectionData = (TextView) view.findViewById(R.id.textViewConnectionData);
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
     }
 
     @Override
