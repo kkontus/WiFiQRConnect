@@ -16,6 +16,8 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -61,6 +63,7 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
     private OnFragmentInteractionListener mListener;
 
     // Create QR tab
+    private CoordinatorLayout mCoordinatorLayout;
     private InstantAutoComplete mAutoCompleteTextViewNetworkSSID;
     private EditText mEditTextNetworkPassword;
     private Spinner mSpinnerNetworkMethods;
@@ -126,8 +129,20 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
         View view = inflater.inflate(R.layout.fragment_create_qr, container, false);
         findViews(view);
 
-        // this is just mock that will show open dropdown
-        initializeNetworkScanAdapter();
+        // this is just mock that will show open dropdown for autocomplete
+        initializeNetworkScanAdapter(view.getContext());
+
+        // TODO
+        mAutoCompleteTextViewNetworkSSID.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean hasFocus) {
+                if (hasFocus) {
+                    if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                        handleScanningNetwork();
+                    }
+                }
+            }
+        });
 
         mAutoCompleteTextViewNetworkSSID.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -141,13 +156,8 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
         });
         mAutoCompleteTextViewNetworkSSID.setThreshold(1);
 
-        List<String> networkMethods = new ArrayList<>();
-        networkMethods.add(ConnectionManagerUtils.DROPDOWN_VALUE_OPEN);
-        networkMethods.add(ConnectionManagerUtils.DROPDOWN_VALUE_WEP);
-        networkMethods.add(ConnectionManagerUtils.DROPDOWN_VALUE_WPA);
-        NetworkSecurityMethodsArrayAdapter adapter = new NetworkSecurityMethodsArrayAdapter(getActivity(), R.layout.spinner_item, networkMethods);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSpinnerNetworkMethods.setAdapter(adapter);
+        // initialize drop down adapter
+        initializeNetworkSecurityMethodsAdapter(view.getContext());
 
         mButtonGenerateQRCode.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -202,9 +212,6 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
             }
         });
 
-        // we need to request user permission for loading available networks
-        requestUserPermissionNetworkScan();
-
         return view;
     }
 
@@ -217,13 +224,20 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        mCoordinatorLayout = (CoordinatorLayout) getActivity().findViewById(R.id.main_content);
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
 
-        System.out.println("onPause");
+        System.out.println("onDetach");
         if (mWiFiReceiver != null) {
-            System.out.println("onPause unregisterReceiver");
+            System.out.println("onDetach unregisterReceiver");
             getActivity().unregisterReceiver(mWiFiReceiver);
             mWiFiReceiver = null;
         }
@@ -245,17 +259,6 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
                 }
                 return;
             }
-            case Config.REQUEST_ACCESS_COARSE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permission was granted, yay! Do the task you need to do.
-                    handleScanningNetwork();
-                } else {
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return;
-            }
         }
     }
 
@@ -268,7 +271,7 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
                 // this thread waiting for the user's response! After the user
                 // sees the explanation, try again to request the permission.
 
-                Snackbar.make(getActivity().getWindow().getDecorView().getRootView(), getString(R.string.save_image_permission_rationale), Snackbar.LENGTH_INDEFINITE).setAction(android.R.string.ok, new View.OnClickListener() {
+                Snackbar.make(mCoordinatorLayout, getString(R.string.save_image_permission_rationale), Snackbar.LENGTH_INDEFINITE).setAction(android.R.string.ok, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         // Request the permission again.
@@ -369,34 +372,14 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
         }
     }
 
-    private void requestUserPermissionNetworkScan() {
-        // check if user permission is already granted
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION)) {
-                // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-                Snackbar.make(getActivity().getWindow().getDecorView().getRootView(), getString(R.string.scan_network_permission_rationale), Snackbar.LENGTH_INDEFINITE).setAction(android.R.string.ok, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // Request the permission again.
-                        // Don't use ActivityCompat.requestPermissions since it goes through parent
-                        // activity and we don't need that, so we need to use requestPermissions
-                        requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, Config.REQUEST_ACCESS_COARSE_LOCATION);
-                    }
-                }).show();
-            } else {
-                // No explanation needed, we can request the permission.
-                // Don't use ActivityCompat.requestPermissions since it goes through parent
-                // activity and we don't need that, so we need to use requestPermissions
-                requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, Config.REQUEST_ACCESS_COARSE_LOCATION);
-            }
-        } else {
-            // user permission has already been granted so we can continue with saving the image
-            handleScanningNetwork();
-        }
+    private void initializeNetworkSecurityMethodsAdapter(Context context) {
+        List<String> networkMethods = new ArrayList<>();
+        networkMethods.add(ConnectionManagerUtils.DROPDOWN_VALUE_OPEN);
+        networkMethods.add(ConnectionManagerUtils.DROPDOWN_VALUE_WEP);
+        networkMethods.add(ConnectionManagerUtils.DROPDOWN_VALUE_WPA);
+        NetworkSecurityMethodsArrayAdapter adapter = new NetworkSecurityMethodsArrayAdapter(context, R.layout.spinner_item, networkMethods);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mSpinnerNetworkMethods.setAdapter(adapter);
     }
 
     @Override
@@ -412,16 +395,16 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
         reloadNetworkScanAdapter(loadedNetworks);
     }
 
-    private void initializeNetworkScanAdapter() {
+    private void initializeNetworkScanAdapter(Context context) {
         List<Network> loadingNetworks = new ArrayList<>();
         Network network = new Network();
         network.setSSID("Loading...");
         loadingNetworks.add(network);
-        setNetworkScanAdapter(loadingNetworks);
+        setNetworkScanAdapter(context, loadingNetworks);
     }
 
-    private void setNetworkScanAdapter(List<Network> scanResults) {
-        mNetworkScanResultsArrayAdapter = new NetworkScanArrayAdapter(getActivity(), R.layout.autocomplete_item, scanResults);
+    private void setNetworkScanAdapter(Context context, List<Network> scanResults) {
+        mNetworkScanResultsArrayAdapter = new NetworkScanArrayAdapter(context, R.layout.autocomplete_item, scanResults);
         mAutoCompleteTextViewNetworkSSID.setAdapter(mNetworkScanResultsArrayAdapter);
     }
 
