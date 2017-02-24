@@ -41,6 +41,7 @@ import com.kkontus.wifiqr.helpers.SharedPreferencesHelper;
 import com.kkontus.wifiqr.helpers.SystemGlobal;
 import com.kkontus.wifiqr.interfaces.NetworkScanner;
 import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
+import com.kkontus.wifiqr.interfaces.OnImageLoadedListener;
 import com.kkontus.wifiqr.models.Network;
 import com.kkontus.wifiqr.utils.ConnectionManagerUtils;
 import com.kkontus.wifiqr.utils.ImageUtils;
@@ -57,10 +58,10 @@ import java.util.List;
  * Use the {@link CreateQRFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class CreateQRFragment extends Fragment implements NetworkScanner {
+public class CreateQRFragment extends Fragment implements NetworkScanner, OnFragmentInteractionListener {
     private static final String ARG_TAB_POSITION = "tabPosition";
     private int tabPosition;
-    private OnFragmentInteractionListener mListener;
+    private OnImageLoadedListener mOnImageLoadedListener;
 
     // Create QR tab
     private CoordinatorLayout mCoordinatorLayout;
@@ -106,11 +107,11 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
+        if (context instanceof OnImageLoadedListener) {
+            mOnImageLoadedListener = (OnImageLoadedListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnImageLoadedListener");
         }
     }
 
@@ -137,7 +138,7 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
             @Override
             public void onFocusChange(View view, boolean hasFocus) {
                 if (hasFocus) {
-                    if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    if (isAccessCoarseLocationPermissionGranted(getContext())) {
                         handleScanningNetwork();
                     }
                 }
@@ -231,16 +232,20 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+
+        System.out.println("onPause");
+        unregisterWiFiReceiver();
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        mOnImageLoadedListener = null;
 
         System.out.println("onDetach");
-        if (mWiFiReceiver != null) {
-            System.out.println("onDetach unregisterReceiver");
-            getActivity().unregisterReceiver(mWiFiReceiver);
-            mWiFiReceiver = null;
-        }
+        unregisterWiFiReceiver();
     }
 
     @Override
@@ -259,6 +264,14 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
                 }
                 return;
             }
+        }
+    }
+
+    private void unregisterWiFiReceiver() {
+        if (mWiFiReceiver != null) {
+            System.out.println("unregisterReceiver");
+            getActivity().unregisterReceiver(mWiFiReceiver);
+            mWiFiReceiver = null;
         }
     }
 
@@ -367,9 +380,13 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
     }
 
     public void onImageLoaded(Bitmap bitmap) {
-        if (mListener != null) {
-            mListener.onImageLoaded(bitmap);
+        if (mOnImageLoadedListener != null) {
+            mOnImageLoadedListener.onImageLoaded(bitmap);
         }
+    }
+
+    private boolean isAccessCoarseLocationPermissionGranted(Context context) {
+        return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
     private void initializeNetworkSecurityMethodsAdapter(Context context) {
@@ -384,7 +401,7 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
 
     @Override
     public void onScanFinished(List<ScanResult> scanResults) {
-        System.out.println("Read Fragment onScanFinished");
+        System.out.println("Create Fragment onScanFinished");
 
         List<Network> loadedNetworks = new ArrayList<>();
         for (ScanResult scanResult : scanResults) {
@@ -398,7 +415,11 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
     private void initializeNetworkScanAdapter(Context context) {
         List<Network> loadingNetworks = new ArrayList<>();
         Network network = new Network();
-        network.setSSID("Loading...");
+        if (isAccessCoarseLocationPermissionGranted(context)) {
+            network.setSSID("Loading...");
+        } else {
+            network.setSSID(null);
+        }
         loadingNetworks.add(network);
         setNetworkScanAdapter(context, loadingNetworks);
     }
@@ -426,24 +447,58 @@ public class CreateQRFragment extends Fragment implements NetworkScanner {
             wifiManager.setWifiEnabled(true);
         }
 
-        final CreateQRFragment readQRFragment = this;
+        final CreateQRFragment createQRFragment = this;
 
         if (mWiFiReceiver == null) {
-            mWiFiReceiver = new BroadcastReceiver() {
-                @Override
-                public void onReceive(Context context, Intent intent) {
-                    if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
-                        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-                        List<ScanResult> scanResults = wifiManager.getScanResults();
-
-                        readQRFragment.onScanFinished(scanResults);
-                    }
-                }
-            };
-
+            mWiFiReceiver = new WiFiReceiver(createQRFragment);
             getActivity().registerReceiver(mWiFiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+
+//            mWiFiReceiver = new BroadcastReceiver() {
+//                @Override
+//                public void onReceive(Context context, Intent intent) {
+//                    if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
+//                        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+//                        List<ScanResult> scanResults = wifiManager.getScanResults();
+//
+//                        createQRFragment.onScanFinished(scanResults);
+//                    }
+//                }
+//            };
+//
+//            getActivity().registerReceiver(mWiFiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         }
         wifiManager.startScan();
+    }
+
+    @Override
+    public void onFragmentFocusGained(Context context, int position) {
+        System.out.println("onFragmentFocusGained " + position);
+
+    }
+
+    @Override
+    public void onFragmentFocusLost(int position) {
+        System.out.println("onFragmentFocusLost " + position);
+
+    }
+
+
+    private class WiFiReceiver extends BroadcastReceiver {
+        private CreateQRFragment mCreateQRFragment;
+
+        public WiFiReceiver(CreateQRFragment createQRFragment) {
+            this.mCreateQRFragment = createQRFragment;
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
+                WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+                List<ScanResult> scanResults = wifiManager.getScanResults();
+
+                mCreateQRFragment.onScanFinished(scanResults);
+            }
+        }
     }
 
 }

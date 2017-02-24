@@ -15,6 +15,7 @@ import com.google.zxing.integration.android.IntentResult;
 import com.kkontus.wifiqr.R;
 import com.kkontus.wifiqr.helpers.QRCodeFormatter;
 import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
+import com.kkontus.wifiqr.interfaces.OnImageLoadedListener;
 import com.kkontus.wifiqr.utils.ConnectionManagerUtils;
 
 import java.util.LinkedHashMap;
@@ -27,10 +28,10 @@ import java.util.LinkedHashMap;
  * Use the {@link ReadQRFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class ReadQRFragment extends Fragment {
+public class ReadQRFragment extends Fragment implements OnFragmentInteractionListener {
     private static final String ARG_TAB_POSITION = "tabPosition";
     private int tabPosition;
-    private OnFragmentInteractionListener mListener;
+    private OnImageLoadedListener mOnImageLoadedListener;
 
     // Read QR tab
     private Button mButtonScanQRCode;
@@ -65,11 +66,11 @@ public class ReadQRFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
+        if (context instanceof OnImageLoadedListener) {
+            mOnImageLoadedListener = (OnImageLoadedListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnImageLoadedListener");
         }
     }
 
@@ -107,7 +108,7 @@ public class ReadQRFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        mOnImageLoadedListener = null;
     }
 
     @Override
@@ -145,6 +146,16 @@ public class ReadQRFragment extends Fragment {
         integrator.setBarcodeImageEnabled(true);
         integrator.setOrientationLocked(false);
         integrator.initiateScan();
+    }
+
+    @Override
+    public void onFragmentFocusGained(Context context, int position) {
+        System.out.println("onFragmentFocusGained " + position);
+    }
+
+    @Override
+    public void onFragmentFocusLost(int position) {
+        System.out.println("onFragmentFocusLost " + position);
     }
 
 }

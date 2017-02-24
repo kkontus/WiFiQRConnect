@@ -20,6 +20,7 @@ import com.kkontus.wifiqr.R;
 import com.kkontus.wifiqr.helpers.Config;
 import com.kkontus.wifiqr.helpers.QRCodeFormatter;
 import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
+import com.kkontus.wifiqr.interfaces.OnImageLoadedListener;
 import com.kkontus.wifiqr.utils.ConnectionManagerUtils;
 import com.kkontus.wifiqr.utils.ImageUtils;
 
@@ -33,10 +34,10 @@ import java.util.LinkedHashMap;
  * Use the {@link LoadQRFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class LoadQRFragment extends Fragment {
+public class LoadQRFragment extends Fragment implements OnFragmentInteractionListener {
     private static final String ARG_TAB_POSITION = "tabPosition";
     private int tabPosition;
-    private OnFragmentInteractionListener mListener;
+    private OnImageLoadedListener mOnImageLoadedListener;
 
     // Load QR tab
     private Button mButtonLoadQRCode;
@@ -68,11 +69,11 @@ public class LoadQRFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
+        if (context instanceof OnImageLoadedListener) {
+            mOnImageLoadedListener = (OnImageLoadedListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnImageLoadedListener");
         }
     }
 
@@ -111,7 +112,7 @@ public class LoadQRFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        mOnImageLoadedListener = null;
     }
 
     @Override
@@ -161,9 +162,19 @@ public class LoadQRFragment extends Fragment {
     }
 
     public void onImageLoaded(Bitmap bitmap) {
-        if (mListener != null) {
-            mListener.onImageLoaded(bitmap);
+        if (mOnImageLoadedListener != null) {
+            mOnImageLoadedListener.onImageLoaded(bitmap);
         }
+    }
+
+    @Override
+    public void onFragmentFocusGained(Context context, int position) {
+        System.out.println("onFragmentFocusGained " + position);
+    }
+
+    @Override
+    public void onFragmentFocusLost(int position) {
+        System.out.println("onFragmentFocusLost " + position);
     }
 
 }

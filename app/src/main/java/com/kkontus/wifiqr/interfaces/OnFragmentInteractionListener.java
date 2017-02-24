@@ -1,6 +1,6 @@
 package com.kkontus.wifiqr.interfaces;
 
-import android.graphics.Bitmap;
+import android.content.Context;
 
 /**
  * This interface must be implemented by activities that contain this
@@ -13,5 +13,6 @@ import android.graphics.Bitmap;
  * >Communicating with Other Fragments</a> for more information.
  */
 public interface OnFragmentInteractionListener {
-    void onImageLoaded(Bitmap bitmap);
+    void onFragmentFocusGained(Context context, int position);
+    void onFragmentFocusLost(int position);
 }

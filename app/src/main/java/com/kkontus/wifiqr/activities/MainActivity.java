@@ -25,11 +25,12 @@ import com.kkontus.wifiqr.R;
 import com.kkontus.wifiqr.adapters.ActionFragmentPagerAdapter;
 import com.kkontus.wifiqr.helpers.Config;
 import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
+import com.kkontus.wifiqr.interfaces.OnImageLoadedListener;
 
 import java.io.File;
 import java.io.FileOutputStream;
 
-public class MainActivity extends AppCompatActivity implements OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements OnImageLoadedListener {
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -113,11 +114,15 @@ public class MainActivity extends AppCompatActivity implements OnFragmentInterac
                 } else {
                     mSnackbarLocationPermission.dismiss();
                 }
+
+                OnFragmentInteractionListener fragmentToShow = (OnFragmentInteractionListener) mActionFragmentPagerAdapter.getItem(tab.getPosition());
+                fragmentToShow.onFragmentFocusGained(getApplicationContext(), tab.getPosition());
             }
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-
+                OnFragmentInteractionListener fragmentToShow = (OnFragmentInteractionListener) mActionFragmentPagerAdapter.getItem(tab.getPosition());
+                fragmentToShow.onFragmentFocusLost(tab.getPosition());
             }
 
             @Override

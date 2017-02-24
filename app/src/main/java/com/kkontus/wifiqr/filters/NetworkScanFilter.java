@@ -27,6 +27,8 @@ public class NetworkScanFilter extends Filter {
             mSuggestions.clear();
 
             for (Network scanResult : mTempScanResults) {
+                if (scanResult == null || scanResult.getSSID() == null) continue;
+
                 if (scanResult.getSSID().toLowerCase().contains(charSequence.toString().toLowerCase())) {
                     mSuggestions.add(scanResult);
                 }
