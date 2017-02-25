@@ -4,13 +4,11 @@ import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.view.ViewGroup;
 
 import com.kkontus.wifiqr.R;
 import com.kkontus.wifiqr.fragments.CreateQRFragment;
 import com.kkontus.wifiqr.fragments.LoadQRFragment;
 import com.kkontus.wifiqr.fragments.ReadQRFragment;
-import com.kkontus.wifiqr.helpers.SystemGlobal;
 
 public class ActionFragmentPagerAdapter extends FragmentPagerAdapter {
     private final int PAGE_COUNT = 3;
@@ -20,17 +18,6 @@ public class ActionFragmentPagerAdapter extends FragmentPagerAdapter {
         super(fm);
 
         this.mContext = context;
-    }
-
-    @Override
-    public void setPrimaryItem(ViewGroup container, int position, Object object) {
-        super.setPrimaryItem(container, position, object);
-
-        boolean fragmentCheck = object instanceof Fragment && (object instanceof ReadQRFragment || object instanceof LoadQRFragment || object instanceof CreateQRFragment);
-
-        if (fragmentCheck) {
-            new SystemGlobal().hideKeyboard((Fragment) object);
-        }
     }
 
     @Override

@@ -24,6 +24,7 @@ import android.view.View;
 import com.kkontus.wifiqr.R;
 import com.kkontus.wifiqr.adapters.ActionFragmentPagerAdapter;
 import com.kkontus.wifiqr.helpers.Config;
+import com.kkontus.wifiqr.helpers.SystemGlobal;
 import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
 import com.kkontus.wifiqr.interfaces.OnImageLoadedListener;
 
@@ -85,6 +86,25 @@ public class MainActivity extends AppCompatActivity implements OnImageLoadedList
 
         // Set up the ViewPager with the sections adapter.
         mViewPager.setAdapter(mActionFragmentPagerAdapter);
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                if (state == ViewPager.SCROLL_STATE_IDLE) {
+                    // hide keyboard
+                    new SystemGlobal().hideKeyboard(MainActivity.this);
+                }
+            }
+        });
 
         // Give the TabLayout the ViewPager
         mTabLayout.setupWithViewPager(mViewPager);
