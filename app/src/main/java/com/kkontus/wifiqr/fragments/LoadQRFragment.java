@@ -45,6 +45,7 @@ public class LoadQRFragment extends Fragment implements OnFragmentInteractionLis
     private ImageView mImageViewLoadedQR;
 
     private Bitmap mQRCodeLoadedBitmap;
+    private float mScale = 1.0f;
 
     public LoadQRFragment() {
         // Required empty public constructor
@@ -92,6 +93,11 @@ public class LoadQRFragment extends Fragment implements OnFragmentInteractionLis
         View view = inflater.inflate(R.layout.fragment_load_qr, container, false);
         findViews(view);
 
+        if (mQRCodeLoadedBitmap != null) {
+            imageViewRequestLayout();
+            mImageViewLoadedQR.setImageBitmap(mQRCodeLoadedBitmap);
+        }
+
         mButtonLoadQRCode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -128,6 +134,7 @@ public class LoadQRFragment extends Fragment implements OnFragmentInteractionLis
                     Bitmap immutableBitmap = imageUtils.getBitmapFromUri(uri);
                     Bitmap bitmap = immutableBitmap.copy(Bitmap.Config.RGB_565, true);
                     mQRCodeLoadedBitmap = bitmap;
+                    imageViewRequestLayout();
 
                     mImageViewLoadedQR.setImageBitmap(mQRCodeLoadedBitmap);
                     onImageLoaded(mQRCodeLoadedBitmap);
@@ -153,6 +160,14 @@ public class LoadQRFragment extends Fragment implements OnFragmentInteractionLis
                 }
                 break;
         }
+    }
+
+    private void imageViewRequestLayout() {
+        // get display density
+        mScale = getResources().getDisplayMetrics().density;
+        mImageViewLoadedQR.getLayoutParams().width = (int) (mQRCodeLoadedBitmap.getWidth() * mScale);
+        mImageViewLoadedQR.getLayoutParams().height = (int) (mQRCodeLoadedBitmap.getHeight() * mScale);
+        mImageViewLoadedQR.requestLayout();
     }
 
     private void launchImagePicker() {

@@ -143,6 +143,7 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
         mRelativeLayoutCreate.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                clearFocus();
                 hideKeyboard();
                 return false;
             }
@@ -184,6 +185,11 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
             }
         });
 
+        if (mQRCodeGeneratedBitmap != null) {
+            imageViewRequestLayout();
+            mImageViewGeneratedQR.setImageBitmap(mQRCodeGeneratedBitmap);
+        }
+
         mButtonGenerateQRCode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -191,12 +197,14 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
                     mAutoCompleteTextViewNetworkSSID.setError(getString(R.string.required_ssid));
                 } else {
                     mNetworkSSID = mAutoCompleteTextViewNetworkSSID.getText().toString();
+                    mAutoCompleteTextViewNetworkSSID.clearFocus();
                 }
 
                 if (mEditTextNetworkPassword.getText().toString().trim().equals("")) {
                     mEditTextNetworkPassword.setError(getString(R.string.required_password));
                 } else {
                     mNetworkPassword = mEditTextNetworkPassword.getText().toString();
+                    mEditTextNetworkPassword.clearFocus();
                 }
 
                 ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils();
@@ -215,12 +223,7 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
                     ImageUtils imageUtils = new ImageUtils(getActivity());
                     Bitmap bitmap = imageUtils.generateQRCode(content, qrCodeSize);
                     mQRCodeGeneratedBitmap = bitmap;
-
-                    // get display density
-                    mScale = getResources().getDisplayMetrics().density;
-                    mImageViewGeneratedQR.getLayoutParams().width = (int) (mQRCodeGeneratedBitmap.getWidth() * mScale);
-                    mImageViewGeneratedQR.getLayoutParams().height = (int) (mQRCodeGeneratedBitmap.getHeight() * mScale);
-                    mImageViewGeneratedQR.requestLayout();
+                    imageViewRequestLayout();
 
                     boolean includeNetworkInfo = mSharedPreferencesHelper.getIncludeNetworkInfo();
                     if (includeNetworkInfo) {
@@ -237,6 +240,14 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
         });
 
         return view;
+    }
+
+    private void imageViewRequestLayout() {
+        // get display density
+        mScale = getResources().getDisplayMetrics().density;
+        mImageViewGeneratedQR.getLayoutParams().width = (int) (mQRCodeGeneratedBitmap.getWidth() * mScale);
+        mImageViewGeneratedQR.getLayoutParams().height = (int) (mQRCodeGeneratedBitmap.getHeight() * mScale);
+        mImageViewGeneratedQR.requestLayout();
     }
 
     @Override
@@ -311,6 +322,12 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
     private void hideKeyboard() {
         // hide keyboard
         new SystemGlobal().hideKeyboard(CreateQRFragment.this);
+    }
+
+    private void clearFocus() {
+        if (getActivity().getCurrentFocus() != null) {
+            getActivity().getCurrentFocus().clearFocus();
+        }
     }
 
     private void requestUserPermissionSaveToSDCard() {
@@ -460,7 +477,9 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
             String connectedNetworkSSID = wifiConfiguration.SSID;
             String SSID = connectedNetworkSSID.replace("\"", "");
             network.setSSID(SSID);
-            loadedNetworks.add(network);
+            if (!loadedNetworks.contains(network)) {
+                loadedNetworks.add(network);
+            }
         }
         reloadNetworkScanAdapter(loadedNetworks);
     }
