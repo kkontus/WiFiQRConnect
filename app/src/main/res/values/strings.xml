@@ -24,4 +24,6 @@
     <string name="share_image_not_empty">Image must be loaded before sharing</string>
     <string name="scan_network_permission_rationale">Proceed to allow location permission to scan for available networks</string>
     <string name="qr_code_bitmap">QR Code image</string>
+    <string name="image_saved">Image saved successfully</string>
+    <string name="image_not_saved">Unable to save image</string>
 </resources>

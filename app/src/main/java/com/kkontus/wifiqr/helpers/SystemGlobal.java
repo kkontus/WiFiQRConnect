@@ -17,14 +17,16 @@ import java.util.Random;
 public class SystemGlobal {
 
     public void hideKeyboard(Activity activity) {
-        if (activity == null || activity.getCurrentFocus() == null || activity.getCurrentFocus().getWindowToken() == null) return;
+        if (activity == null || activity.getCurrentFocus() == null || activity.getCurrentFocus().getWindowToken() == null)
+            return;
 
         InputMethodManager inputManager = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
         inputManager.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
     }
 
     public void hideKeyboard(Fragment fragment) {
-        if (fragment == null || fragment.getActivity() == null || fragment.getActivity().getCurrentFocus() == null || fragment.getActivity().getCurrentFocus().getWindowToken() == null) return;
+        if (fragment == null || fragment.getActivity() == null || fragment.getActivity().getCurrentFocus() == null || fragment.getActivity().getCurrentFocus().getWindowToken() == null)
+            return;
 
         InputMethodManager inputManager = (InputMethodManager) fragment.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         inputManager.hideSoftInputFromWindow(fragment.getActivity().getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
@@ -49,20 +51,25 @@ public class SystemGlobal {
         return false;
     }
 
-    public void handleSavingImage(Context context, Bitmap bitmap, String filename) {
+    public boolean handleSavingImage(Context context, Bitmap bitmap, String filename) {
+        boolean isSaved;
         // check permissions to write every time, also add saving to internal memory
         if (isExternalStorageReadable() && isExternalStorageWritable()) {
             Random generator = new Random();
             int n = 10000;
             n = generator.nextInt(n);
             String filenameUnique = n + filename;
-            saveImageToExternalStorage(context, bitmap, filenameUnique);
+            isSaved = saveImageToExternalStorage(context, bitmap, filenameUnique);
         } else {
             System.out.println("Storage not writable");
+            isSaved = false;
         }
+
+        return isSaved;
     }
 
-    private void saveImageToExternalStorage(Context context, Bitmap bitmap, String filename) {
+    private boolean saveImageToExternalStorage(Context context, Bitmap bitmap, String filename) {
+        boolean isSaved;
         String root = Environment.getExternalStorageDirectory().toString();
         File directory = new File(root + Config.SAVE_IMAGE_FOLDER);
         directory.mkdirs();
@@ -77,8 +84,10 @@ public class SystemGlobal {
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
             out.flush();
             out.close();
+            isSaved = true;
         } catch (Exception e) {
             e.printStackTrace();
+            isSaved = false;
         }
 
         // Tell the media scanner about the new file so that it is
@@ -91,6 +100,8 @@ public class SystemGlobal {
                         Log.i("ExternalStorage", "-> uri=" + uri);
                     }
                 });
+
+        return isSaved;
     }
 
 }

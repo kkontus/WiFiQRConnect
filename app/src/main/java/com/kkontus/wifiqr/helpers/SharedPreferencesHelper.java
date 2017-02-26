@@ -29,7 +29,7 @@ public class SharedPreferencesHelper {
     }
 
     public int getQrCodeImageSize() {
-        return mSharedPreferences.getInt(QR_CODE_IMAGE_SIZE, 0);
+        return mSharedPreferences.getInt(QR_CODE_IMAGE_SIZE, 3);
     }
 
     public void setQrCodeImageSize(int imageSize) {

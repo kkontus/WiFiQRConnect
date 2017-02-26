@@ -33,6 +33,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.kkontus.wifiqr.R;
 import com.kkontus.wifiqr.adapters.NetworkScanArrayAdapter;
@@ -361,7 +362,12 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
     }
 
     private void handleSavingImage() {
-        new SystemGlobal().handleSavingImage(getActivity(), mQRCodeGeneratedBitmap, Config.SAVE_IMAGE_NAME);
+        boolean isSaved = new SystemGlobal().handleSavingImage(getActivity(), mQRCodeGeneratedBitmap, Config.SAVE_IMAGE_NAME);
+        if (isSaved) {
+            Toast.makeText(getActivity(), getActivity().getString(R.string.image_saved), Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(getActivity(), getActivity().getString(R.string.image_not_saved), Toast.LENGTH_LONG).show();
+        }
     }
 
     @NonNull
