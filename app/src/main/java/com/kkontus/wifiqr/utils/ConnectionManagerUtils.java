@@ -28,6 +28,10 @@ public class ConnectionManagerUtils {
 
     }
 
+    public ConnectionManagerUtils(Context context) {
+        mContext = context;
+    }
+
     public ConnectionManagerUtils(Context context, String networkSSID, String networkPassword, String networkType) {
         mContext = context;
         mNetworkSSID = networkSSID;
@@ -35,9 +39,19 @@ public class ConnectionManagerUtils {
         mNetworkType = networkType;
     }
 
+    private WifiManager getWifiManager() {
+        return (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
+    }
+
+    public String connectedNetworkSSID() {
+        WifiManager wifiManager = getWifiManager();
+        String connectedNetworkSSID =  wifiManager.getConnectionInfo().getSSID();
+        return connectedNetworkSSID.replace("\"", "");
+    }
+
     public void establishConnection() {
         // turn on WiFi if not already enabled
-        WifiManager wifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifiManager = getWifiManager();
         boolean wifiEnabled = wifiManager.isWifiEnabled();
         if (!wifiEnabled) {
             wifiManager.setWifiEnabled(true);

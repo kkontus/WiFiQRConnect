@@ -13,6 +13,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.net.wifi.ScanResult;
+import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -23,12 +24,14 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 
 import com.kkontus.wifiqr.R;
@@ -65,6 +68,7 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
 
     // Create QR tab
     private CoordinatorLayout mCoordinatorLayout;
+    private RelativeLayout mRelativeLayoutCreate;
     private InstantAutoComplete mAutoCompleteTextViewNetworkSSID;
     private EditText mEditTextNetworkPassword;
     private Spinner mSpinnerNetworkMethods;
@@ -130,8 +134,19 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
         View view = inflater.inflate(R.layout.fragment_create_qr, container, false);
         findViews(view);
 
+        ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils(view.getContext());
+        String connectedNetwork = connectionManagerUtils.connectedNetworkSSID();
+
         // this is just mock that will show open dropdown for autocomplete
         initializeNetworkScanAdapter(view.getContext());
+
+        mRelativeLayoutCreate.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                hideKeyboard();
+                return false;
+            }
+        });
 
         // TODO
         mAutoCompleteTextViewNetworkSSID.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -156,9 +171,18 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
             }
         });
         mAutoCompleteTextViewNetworkSSID.setThreshold(1);
+        mAutoCompleteTextViewNetworkSSID.setText(connectedNetwork);
+        mAutoCompleteTextViewNetworkSSID.setSelection(connectedNetwork.length());
 
         // initialize drop down adapter
         initializeNetworkSecurityMethodsAdapter(view.getContext());
+        mSpinnerNetworkMethods.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                hideKeyboard();
+                return false;
+            }
+        });
 
         mButtonGenerateQRCode.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -179,8 +203,7 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
                 mNetworkType = connectionManagerUtils.networkTypeMapper(mSpinnerNetworkMethods.getSelectedItem().toString());
                 // don't check for the condition "mNetworkType != null" since it's null for the open network
                 if (mNetworkSSID != null && mNetworkPassword != null) {
-                    // hide keyboard
-                    new SystemGlobal().hideKeyboard(CreateQRFragment.this);
+                    hideKeyboard();
 
                     // start generating QR code
                     mSharedPreferencesHelper = new SharedPreferencesHelper(getActivity());
@@ -216,7 +239,17 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
         return view;
     }
 
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+
+        if (isVisibleToUser && mAutoCompleteTextViewNetworkSSID != null) {
+            mAutoCompleteTextViewNetworkSSID.requestFocus();
+        }
+    }
+
     private void findViews(View view) {
+        mRelativeLayoutCreate = (RelativeLayout) view.findViewById(R.id.fragment_main_create);
         mAutoCompleteTextViewNetworkSSID = (InstantAutoComplete) view.findViewById(R.id.autoCompleteTextViewNetworkSSID);
         mEditTextNetworkPassword = (EditText) view.findViewById(R.id.editTextNetworkPassword);
         mSpinnerNetworkMethods = (Spinner) view.findViewById(R.id.spinnerNetworkMethods);
@@ -273,6 +306,11 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
             getActivity().unregisterReceiver(mWiFiReceiver);
             mWiFiReceiver = null;
         }
+    }
+
+    private void hideKeyboard() {
+        // hide keyboard
+        new SystemGlobal().hideKeyboard(CreateQRFragment.this);
     }
 
     private void requestUserPermissionSaveToSDCard() {
@@ -412,6 +450,21 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
         reloadNetworkScanAdapter(loadedNetworks);
     }
 
+    @Override
+    public void onScanConfiguredFinished(List<WifiConfiguration> scanConfiguredNetworksResults) {
+        System.out.println("Create Fragment onScanConfiguredFinished");
+
+        List<Network> loadedNetworks = new ArrayList<>();
+        for (WifiConfiguration wifiConfiguration : scanConfiguredNetworksResults) {
+            Network network = new Network();
+            String connectedNetworkSSID = wifiConfiguration.SSID;
+            String SSID = connectedNetworkSSID.replace("\"", "");
+            network.setSSID(SSID);
+            loadedNetworks.add(network);
+        }
+        reloadNetworkScanAdapter(loadedNetworks);
+    }
+
     private void initializeNetworkScanAdapter(Context context) {
         List<Network> loadingNetworks = new ArrayList<>();
         Network network = new Network();
@@ -494,9 +547,11 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
                 WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-                List<ScanResult> scanResults = wifiManager.getScanResults();
+                //List<ScanResult> scanResults = wifiManager.getScanResults();
+                //mCreateQRFragment.onScanFinished(scanResults);
 
-                mCreateQRFragment.onScanFinished(scanResults);
+                List<WifiConfiguration> configuredNetworks = wifiManager.getConfiguredNetworks();
+                mCreateQRFragment.onScanConfiguredFinished(configuredNetworks);
             }
         }
     }

@@ -94,14 +94,13 @@ public class MainActivity extends AppCompatActivity implements OnImageLoadedList
 
             @Override
             public void onPageSelected(int position) {
-
+                clearFocus();
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {
                 if (state == ViewPager.SCROLL_STATE_IDLE) {
-                    // hide keyboard
-                    new SystemGlobal().hideKeyboard(MainActivity.this);
+                    hideKeyboard();
                 }
             }
         });
@@ -113,6 +112,9 @@ public class MainActivity extends AppCompatActivity implements OnImageLoadedList
         mTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
+                clearFocus();
+                hideKeyboard();
+
                 if (tab.getPosition() == 1 || tab.getPosition() == 2) {
                     mFab.show();
                 } else {
@@ -189,6 +191,17 @@ public class MainActivity extends AppCompatActivity implements OnImageLoadedList
         System.out.println("MainActivity onImageLoaded");
 
         mQRCodeLoadedBitmap = bitmap;
+    }
+
+    private void hideKeyboard() {
+        // hide keyboard
+        new SystemGlobal().hideKeyboard(MainActivity.this);
+    }
+
+    private void clearFocus() {
+        if (getCurrentFocus() != null) {
+            getCurrentFocus().clearFocus();
+        }
     }
 
     private void shareQRCodeBitmap(Bitmap bitmap, String filename) {

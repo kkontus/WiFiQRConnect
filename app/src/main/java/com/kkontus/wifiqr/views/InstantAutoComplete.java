@@ -28,8 +28,8 @@ public class InstantAutoComplete extends AutoCompleteTextView {
     protected void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
         super.onFocusChanged(focused, direction, previouslyFocusedRect);
 
-        if (focused) {
-            performFiltering(getText(), 0);
+        if (focused && getAdapter() != null) {
+            performFiltering("", 0);
         }
     }
 }
