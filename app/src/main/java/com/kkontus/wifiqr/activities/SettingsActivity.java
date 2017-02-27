@@ -11,8 +11,10 @@ import com.kkontus.wifiqr.R;
 import com.kkontus.wifiqr.helpers.SharedPreferencesHelper;
 
 public class SettingsActivity extends AppCompatActivity {
+    private Switch mSwitchConfigureWifi;
+    private TextView mTextViewConfigureWifiStatus;
     private Switch mSwitchShowData;
-    private TextView mTextViewSwitchStatus;
+    private TextView mTextViewShowDataStatus;
     private SeekBar mSeekBarImageSize;
     private TextView mTextViewSeekBarStatus;
     private SharedPreferencesHelper mSharedPreferencesHelper;
@@ -25,17 +27,29 @@ public class SettingsActivity extends AppCompatActivity {
 
         mSharedPreferencesHelper = new SharedPreferencesHelper(this);
 
+        mSwitchConfigureWifi.setChecked(false);
+        mSwitchConfigureWifi.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                mSharedPreferencesHelper.setConfigureWiFiAutomatically(isChecked);
+                setSwitchConfigureWifiValue(isChecked);
+            }
+        });
+        boolean configureWiFiAutomatically = mSharedPreferencesHelper.getConfigureWiFiAutomatically();
+        setSwitchConfigureWifiValue(configureWiFiAutomatically);
+
+
         mSwitchShowData.setChecked(false);
         mSwitchShowData.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mSharedPreferencesHelper.setIncludeNetworkInfo(isChecked);
-                setSwitchValue(isChecked);
+                setSwitchShowDataValue(isChecked);
             }
         });
-
         boolean includeNetworkInfo = mSharedPreferencesHelper.getIncludeNetworkInfo();
-        setSwitchValue(includeNetworkInfo);
+        setSwitchShowDataValue(includeNetworkInfo);
+
 
         mSeekBarImageSize.setPadding(25, 0, 25, 0);
         mSeekBarImageSize.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -61,8 +75,10 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void findViews() {
+        mSwitchConfigureWifi = (Switch) findViewById(R.id.switchConfigureWifi);
+        mTextViewConfigureWifiStatus = (TextView) findViewById(R.id.textViewConfigureWifiStatus);
         mSwitchShowData = (Switch) findViewById(R.id.switchShowData);
-        mTextViewSwitchStatus = (TextView) findViewById(R.id.textViewSwitchStatus);
+        mTextViewShowDataStatus = (TextView) findViewById(R.id.textViewShowDataStatus);
         mSeekBarImageSize = (SeekBar) findViewById(R.id.seekBarImageSize);
         mTextViewSeekBarStatus = (TextView) findViewById(R.id.textViewSeekBarStatus);
     }
@@ -79,13 +95,23 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    private void setSwitchValue(boolean isChecked) {
+    private void setSwitchShowDataValue(boolean isChecked) {
         mSwitchShowData.setChecked(isChecked);
 
         if (isChecked) {
-            mTextViewSwitchStatus.setText(getString(R.string.enabled));
+            mTextViewShowDataStatus.setText(getString(R.string.enabled));
         } else {
-            mTextViewSwitchStatus.setText(getString(R.string.disabled));
+            mTextViewShowDataStatus.setText(getString(R.string.disabled));
+        }
+    }
+
+    private void setSwitchConfigureWifiValue(boolean isChecked) {
+        mSwitchConfigureWifi.setChecked(isChecked);
+
+        if (isChecked) {
+            mTextViewConfigureWifiStatus.setText(getString(R.string.enabled));
+        } else {
+            mTextViewConfigureWifiStatus.setText(getString(R.string.disabled));
         }
     }
 

@@ -13,7 +13,9 @@ import android.widget.TextView;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.kkontus.wifiqr.R;
+import com.kkontus.wifiqr.dialogs.NetworkConfigurationDialog;
 import com.kkontus.wifiqr.helpers.QRCodeFormatter;
+import com.kkontus.wifiqr.helpers.SharedPreferencesHelper;
 import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
 import com.kkontus.wifiqr.interfaces.OnImageLoadedListener;
 import com.kkontus.wifiqr.utils.ConnectionManagerUtils;
@@ -41,6 +43,7 @@ public class ReadQRFragment extends Fragment implements OnFragmentInteractionLis
     private String mNetworkSSID;
     private String mNetworkPassword;
     private String mNetworkType;
+    private SharedPreferencesHelper mSharedPreferencesHelper;
 
     public ReadQRFragment() {
         // Required empty public constructor
@@ -127,8 +130,15 @@ public class ReadQRFragment extends Fragment implements OnFragmentInteractionLis
 
                 // don't check for the condition "mNetworkType != null" since it's null for the open network
                 if (mNetworkSSID != null && mNetworkPassword != null) {
-                    ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils(getActivity(), mNetworkSSID, mNetworkPassword, mNetworkType);
-                    connectionManagerUtils.establishConnection();
+                    mSharedPreferencesHelper = new SharedPreferencesHelper(getActivity());
+                    boolean configureWiFiAutomatically = mSharedPreferencesHelper.getConfigureWiFiAutomatically();
+                    if (configureWiFiAutomatically) {
+                        ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils(getActivity(), mNetworkSSID, mNetworkPassword, mNetworkType);
+                        connectionManagerUtils.establishConnection();
+                    } else {
+                        NetworkConfigurationDialog networkConfigurationDialog = new NetworkConfigurationDialog(getActivity());
+                        networkConfigurationDialog.showNetworkConfigurationDialog(mNetworkSSID, mNetworkPassword, mNetworkType);
+                    }
                 } else {
                     System.out.println("Some credentials are null");
                 }

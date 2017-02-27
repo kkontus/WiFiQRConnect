@@ -17,8 +17,10 @@ import android.widget.TextView;
 
 import com.google.zxing.Result;
 import com.kkontus.wifiqr.R;
+import com.kkontus.wifiqr.dialogs.NetworkConfigurationDialog;
 import com.kkontus.wifiqr.helpers.Config;
 import com.kkontus.wifiqr.helpers.QRCodeFormatter;
+import com.kkontus.wifiqr.helpers.SharedPreferencesHelper;
 import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
 import com.kkontus.wifiqr.interfaces.OnImageLoadedListener;
 import com.kkontus.wifiqr.utils.ConnectionManagerUtils;
@@ -43,6 +45,11 @@ public class LoadQRFragment extends Fragment implements OnFragmentInteractionLis
     private Button mButtonLoadQRCode;
     private TextView mTextViewLoadedData;
     private ImageView mImageViewLoadedQR;
+
+    private String mNetworkSSID;
+    private String mNetworkPassword;
+    private String mNetworkType;
+    private SharedPreferencesHelper mSharedPreferencesHelper;
 
     private Bitmap mQRCodeLoadedBitmap;
     private float mScale = 1.0f;
@@ -143,14 +150,21 @@ public class LoadQRFragment extends Fragment implements OnFragmentInteractionLis
                         mTextViewLoadedData.setText(result.getText());
 
                         LinkedHashMap networkCredentials = new QRCodeFormatter().extractWiFiCredentials(result.getText().toString());
-                        String mNetworkSSID = (String) networkCredentials.get(ConnectionManagerUtils.NETWORK_SSID);
-                        String mNetworkPassword = (String) networkCredentials.get(ConnectionManagerUtils.NETWORK_PASSWORD);
-                        String mNetworkType = (String) networkCredentials.get(ConnectionManagerUtils.NETWORK_TYPE);
+                        mNetworkSSID = (String) networkCredentials.get(ConnectionManagerUtils.NETWORK_SSID);
+                        mNetworkPassword = (String) networkCredentials.get(ConnectionManagerUtils.NETWORK_PASSWORD);
+                        mNetworkType = (String) networkCredentials.get(ConnectionManagerUtils.NETWORK_TYPE);
 
                         // don't check for the condition "mNetworkType != null" since it's null for the open network
                         if (mNetworkSSID != null && mNetworkPassword != null) {
-                            ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils(getActivity(), mNetworkSSID, mNetworkPassword, mNetworkType);
-                            connectionManagerUtils.establishConnection();
+                            mSharedPreferencesHelper = new SharedPreferencesHelper(getActivity());
+                            boolean configureWiFiAutomatically = mSharedPreferencesHelper.getConfigureWiFiAutomatically();
+                            if (configureWiFiAutomatically) {
+                                ConnectionManagerUtils connectionManagerUtils = new ConnectionManagerUtils(getActivity(), mNetworkSSID, mNetworkPassword, mNetworkType);
+                                connectionManagerUtils.establishConnection();
+                            } else {
+                                NetworkConfigurationDialog networkConfigurationDialog = new NetworkConfigurationDialog(getActivity());
+                                networkConfigurationDialog.showNetworkConfigurationDialog(mNetworkSSID, mNetworkPassword, mNetworkType);
+                            }
                         } else {
                             System.out.println("Some credentials are null");
                         }

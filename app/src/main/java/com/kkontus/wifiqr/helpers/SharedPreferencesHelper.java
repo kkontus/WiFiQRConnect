@@ -8,6 +8,7 @@ public class SharedPreferencesHelper {
     private SharedPreferences mSharedPreferences;
     private static SharedPreferences.Editor mEditor;
 
+    private static final String CONFIGURE_WIFI_AUTOMATICALLY = "configureWiFiAutomatically";
     private static final String INCLUDE_NETWORK_INFO = "includeNetworkInfo";
     private static final String QR_CODE_IMAGE_SIZE = "qrCodeImageSize";
 
@@ -15,6 +16,17 @@ public class SharedPreferencesHelper {
         this.mContext = context;
         this.mSharedPreferences = mContext.getSharedPreferences(Config.PREFS_NAME, Context.MODE_PRIVATE);
         this.mEditor = mSharedPreferences.edit();
+    }
+
+    public boolean getConfigureWiFiAutomatically() {
+        return mSharedPreferences.getBoolean(CONFIGURE_WIFI_AUTOMATICALLY, true);
+    }
+
+    public void setConfigureWiFiAutomatically(boolean configureWiFiAutomatically) {
+        if (mEditor != null) {
+            mEditor.putBoolean(CONFIGURE_WIFI_AUTOMATICALLY, configureWiFiAutomatically);
+            mEditor.apply();
+        }
     }
 
     public boolean getIncludeNetworkInfo() {

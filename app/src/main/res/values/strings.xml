@@ -15,6 +15,7 @@
     <string name="required_password">Password is required!</string>
     <string name="result_unable_to_read">Unable to read tha data from the image</string>
     <string name="include_network_info">Include network info on the QR code</string>
+    <string name="configure_wifi_without_asking">Configure WiFi automatically</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
     <string name="image_small">Small QR code (120x120)</string>
@@ -26,4 +27,6 @@
     <string name="qr_code_bitmap">QR Code image</string>
     <string name="image_saved">Image saved successfully</string>
     <string name="image_not_saved">Unable to save image</string>
+    <string name="configure_wifi">Configure WiFi</string>
+    <string name="configure_wifi_with_name">Continue configuring your WiFi</string>
 </resources>
