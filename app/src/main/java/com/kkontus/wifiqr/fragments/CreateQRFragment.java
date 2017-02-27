@@ -156,9 +156,10 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
             @Override
             public void onFocusChange(View view, boolean hasFocus) {
                 if (hasFocus) {
-                    if (isAccessCoarseLocationPermissionGranted(getContext())) {
-                        handleScanningNetwork();
-                    }
+                    handleScanningNetwork();
+//                    if (isAccessCoarseLocationPermissionGranted(getContext())) {
+//                        handleScanningNetwork();
+//                    }
                 }
             }
         });
@@ -447,9 +448,9 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
         }
     }
 
-    private boolean isAccessCoarseLocationPermissionGranted(Context context) {
-        return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-    }
+//    private boolean isAccessCoarseLocationPermissionGranted(Context context) {
+//        return ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+//    }
 
     private void initializeNetworkSecurityMethodsAdapter(Context context) {
         List<String> networkMethods = new ArrayList<>();
@@ -494,11 +495,12 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
     private void initializeNetworkScanAdapter(Context context) {
         List<Network> loadingNetworks = new ArrayList<>();
         Network network = new Network();
-        if (isAccessCoarseLocationPermissionGranted(context)) {
-            network.setSSID("Loading...");
-        } else {
-            network.setSSID(null);
-        }
+        network.setSSID("Loading...");
+//        if (isAccessCoarseLocationPermissionGranted(context)) {
+//            network.setSSID("Loading...");
+//        } else {
+//            network.setSSID(null);
+//        }
         loadingNetworks.add(network);
         setNetworkScanAdapter(context, loadingNetworks);
     }

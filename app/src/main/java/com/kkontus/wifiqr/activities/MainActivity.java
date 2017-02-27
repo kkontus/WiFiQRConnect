@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements OnImageLoadedList
     private ViewPager mViewPager;
     private CoordinatorLayout mCoordinatorLayout;
     private FloatingActionButton mFab;
-    private Snackbar mSnackbarLocationPermission;
+//    private Snackbar mSnackbarLocationPermission;
     private TabLayout mTabLayout;
     private Bitmap mQRCodeLoadedBitmap;
 
@@ -77,8 +77,8 @@ public class MainActivity extends AppCompatActivity implements OnImageLoadedList
             }
         });
 
-        // TODO
-        mSnackbarLocationPermission = makeSnackbar();
+//        // TODO
+//        mSnackbarLocationPermission = makeSnackbar();
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -121,21 +121,21 @@ public class MainActivity extends AppCompatActivity implements OnImageLoadedList
                     mFab.hide();
                 }
 
-                // TODO
-                if (tab.getPosition() == 2) {
-                    // make new in case previous one is closed by swipe
-                    mSnackbarLocationPermission = makeSnackbar();
-
-                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
-                            mSnackbarLocationPermission.show();
-                        } else {
-                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, Config.REQUEST_ACCESS_COARSE_LOCATION);
-                        }
-                    }
-                } else {
-                    mSnackbarLocationPermission.dismiss();
-                }
+//                // TODO
+//                if (tab.getPosition() == 2) {
+//                    // make new in case previous one is closed by swipe
+//                    mSnackbarLocationPermission = makeSnackbar();
+//
+//                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//                        if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
+//                            mSnackbarLocationPermission.show();
+//                        } else {
+//                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, Config.REQUEST_ACCESS_COARSE_LOCATION);
+//                        }
+//                    }
+//                } else {
+//                    mSnackbarLocationPermission.dismiss();
+//                }
 
                 OnFragmentInteractionListener fragmentToShow = (OnFragmentInteractionListener) mActionFragmentPagerAdapter.getItem(tab.getPosition());
                 fragmentToShow.onFragmentFocusGained(getApplicationContext(), tab.getPosition());
@@ -223,39 +223,39 @@ public class MainActivity extends AppCompatActivity implements OnImageLoadedList
         }
     }
 
-    // TODO
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        switch (requestCode) {
-            case Config.REQUEST_ACCESS_COARSE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permission was granted, yay! Do the task you need to do.
-                } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                    // Should we show an explanation?
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
-
-                    } else {
-                        //Never ask again selected, or device policy prohibits the app from having that permission.
-                        //So, disable that feature, or fall back to another situation...
-                    }
-                }
-                return;
-            }
-        }
-    }
-
-    @NonNull
-    private Snackbar makeSnackbar() {
-        return Snackbar.make(mCoordinatorLayout, getString(R.string.scan_network_permission_rationale), Snackbar.LENGTH_INDEFINITE).setAction(android.R.string.ok, new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Request the permission again.
-                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, Config.REQUEST_ACCESS_COARSE_LOCATION);
-            }
-        });
-    }
+//    // TODO
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//
+//        switch (requestCode) {
+//            case Config.REQUEST_ACCESS_COARSE_LOCATION: {
+//                // If request is cancelled, the result arrays are empty.
+//                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    // permission was granted, yay! Do the task you need to do.
+//                } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+//                    // Should we show an explanation?
+//                    if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION)) {
+//
+//                    } else {
+//                        //Never ask again selected, or device policy prohibits the app from having that permission.
+//                        //So, disable that feature, or fall back to another situation...
+//                    }
+//                }
+//                return;
+//            }
+//        }
+//    }
+//
+//    @NonNull
+//    private Snackbar makeSnackbar() {
+//        return Snackbar.make(mCoordinatorLayout, getString(R.string.scan_network_permission_rationale), Snackbar.LENGTH_INDEFINITE).setAction(android.R.string.ok, new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                // Request the permission again.
+//                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, Config.REQUEST_ACCESS_COARSE_LOCATION);
+//            }
+//        });
+//    }
 
 }
