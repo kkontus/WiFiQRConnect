@@ -47,6 +47,7 @@ import com.kkontus.wifiqr.interfaces.NetworkScanner;
 import com.kkontus.wifiqr.interfaces.OnFragmentInteractionListener;
 import com.kkontus.wifiqr.interfaces.OnImageLoadedListener;
 import com.kkontus.wifiqr.models.Network;
+import com.kkontus.wifiqr.receivers.WiFiReceiver;
 import com.kkontus.wifiqr.utils.ConnectionManagerUtils;
 import com.kkontus.wifiqr.utils.ImageUtils;
 import com.kkontus.wifiqr.views.InstantAutoComplete;
@@ -561,24 +562,24 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
     }
 
 
-    private class WiFiReceiver extends BroadcastReceiver {
-        private CreateQRFragment mCreateQRFragment;
-
-        public WiFiReceiver(CreateQRFragment createQRFragment) {
-            this.mCreateQRFragment = createQRFragment;
-        }
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
-                WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-                //List<ScanResult> scanResults = wifiManager.getScanResults();
-                //mCreateQRFragment.onScanFinished(scanResults);
-
-                List<WifiConfiguration> configuredNetworks = wifiManager.getConfiguredNetworks();
-                mCreateQRFragment.onScanConfiguredFinished(configuredNetworks);
-            }
-        }
-    }
+//    private class WiFiReceiver extends BroadcastReceiver {
+//        private CreateQRFragment mCreateQRFragment;
+//
+//        public WiFiReceiver(CreateQRFragment createQRFragment) {
+//            this.mCreateQRFragment = createQRFragment;
+//        }
+//
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
+//                WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+//                //List<ScanResult> scanResults = wifiManager.getScanResults();
+//                //mCreateQRFragment.onScanFinished(scanResults);
+//
+//                List<WifiConfiguration> configuredNetworks = wifiManager.getConfiguredNetworks();
+//                mCreateQRFragment.onScanConfiguredFinished(configuredNetworks);
+//            }
+//        }
+//    }
 
 }
