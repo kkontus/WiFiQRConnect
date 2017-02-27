@@ -3,7 +3,6 @@ package com.kkontus.wifiqr.fragments;
 import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -141,17 +140,38 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
 
         // this is just mock that will show open dropdown for autocomplete
         initializeNetworkScanAdapter(view.getContext());
+        mAutoCompleteTextViewNetworkSSID.setThreshold(1);
+        mAutoCompleteTextViewNetworkSSID.setText(connectedNetwork);
+        mAutoCompleteTextViewNetworkSSID.setSelection(connectedNetwork.length());
+        // initialize drop down adapter
+        initializeNetworkSecurityMethodsAdapter(view.getContext());
 
+        if (mQRCodeGeneratedBitmap != null) {
+            imageViewRequestLayout();
+            mImageViewGeneratedQR.setImageBitmap(mQRCodeGeneratedBitmap);
+        }
+
+
+        // RelativeLayout listeners
         mRelativeLayoutCreate.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
+            public boolean onTouch(View view, MotionEvent event) {
                 clearFocus();
                 hideKeyboard();
                 return false;
             }
         });
 
-        // TODO
+        // AutoCompleteTextView listeners
+        mAutoCompleteTextViewNetworkSSID.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                // this will disable view pager swipe when swipe gesture is made over this view
+                view.getParent().requestDisallowInterceptTouchEvent(true);
+                return false;
+            }
+        });
+        // AutoCompleteTextView listeners
         mAutoCompleteTextViewNetworkSSID.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean hasFocus) {
@@ -163,7 +183,7 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
                 }
             }
         });
-
+        // AutoCompleteTextView listeners
         mAutoCompleteTextViewNetworkSSID.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -174,25 +194,36 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
                 }
             }
         });
-        mAutoCompleteTextViewNetworkSSID.setThreshold(1);
-        mAutoCompleteTextViewNetworkSSID.setText(connectedNetwork);
-        mAutoCompleteTextViewNetworkSSID.setSelection(connectedNetwork.length());
 
-        // initialize drop down adapter
-        initializeNetworkSecurityMethodsAdapter(view.getContext());
+        // EditText listeners
+        mEditTextNetworkPassword.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                // this will disable view pager swipe when swipe gesture is made over this view
+                view.getParent().requestDisallowInterceptTouchEvent(true);
+                return false;
+            }
+        });
+
+        // Spinner listeners
         mSpinnerNetworkMethods.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
+            public boolean onTouch(View view, MotionEvent event) {
                 hideKeyboard();
                 return false;
             }
         });
 
-        if (mQRCodeGeneratedBitmap != null) {
-            imageViewRequestLayout();
-            mImageViewGeneratedQR.setImageBitmap(mQRCodeGeneratedBitmap);
-        }
-
+        // Button listeners
+        mButtonGenerateQRCode.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                // this will disable view pager swipe when swipe gesture is made over this view
+                view.getParent().requestDisallowInterceptTouchEvent(true);
+                return false;
+            }
+        });
+        // Button listeners
         mButtonGenerateQRCode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -245,12 +276,13 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
         return view;
     }
 
-    private void imageViewRequestLayout() {
-        // get display density
-        mScale = getResources().getDisplayMetrics().density;
-        mImageViewGeneratedQR.getLayoutParams().width = (int) (mQRCodeGeneratedBitmap.getWidth() * mScale);
-        mImageViewGeneratedQR.getLayoutParams().height = (int) (mQRCodeGeneratedBitmap.getHeight() * mScale);
-        mImageViewGeneratedQR.requestLayout();
+    private void findViews(View view) {
+        mRelativeLayoutCreate = (RelativeLayout) view.findViewById(R.id.fragment_main_create);
+        mAutoCompleteTextViewNetworkSSID = (InstantAutoComplete) view.findViewById(R.id.autoCompleteTextViewNetworkSSID);
+        mEditTextNetworkPassword = (EditText) view.findViewById(R.id.editTextNetworkPassword);
+        mSpinnerNetworkMethods = (Spinner) view.findViewById(R.id.spinnerNetworkMethods);
+        mButtonGenerateQRCode = (Button) view.findViewById(R.id.buttonGenerateQRCode);
+        mImageViewGeneratedQR = (ImageView) view.findViewById(R.id.imageViewGeneratedQR);
     }
 
     @Override
@@ -260,15 +292,6 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
         if (isVisibleToUser && mAutoCompleteTextViewNetworkSSID != null) {
             mAutoCompleteTextViewNetworkSSID.requestFocus();
         }
-    }
-
-    private void findViews(View view) {
-        mRelativeLayoutCreate = (RelativeLayout) view.findViewById(R.id.fragment_main_create);
-        mAutoCompleteTextViewNetworkSSID = (InstantAutoComplete) view.findViewById(R.id.autoCompleteTextViewNetworkSSID);
-        mEditTextNetworkPassword = (EditText) view.findViewById(R.id.editTextNetworkPassword);
-        mSpinnerNetworkMethods = (Spinner) view.findViewById(R.id.spinnerNetworkMethods);
-        mButtonGenerateQRCode = (Button) view.findViewById(R.id.buttonGenerateQRCode);
-        mImageViewGeneratedQR = (ImageView) view.findViewById(R.id.imageViewGeneratedQR);
     }
 
     @Override
@@ -361,6 +384,14 @@ public class CreateQRFragment extends Fragment implements NetworkScanner, OnFrag
             // user permission has already been granted so we can continue with saving the image
             handleSavingImage();
         }
+    }
+
+    private void imageViewRequestLayout() {
+        // get display density
+        mScale = getResources().getDisplayMetrics().density;
+        mImageViewGeneratedQR.getLayoutParams().width = (int) (mQRCodeGeneratedBitmap.getWidth() * mScale);
+        mImageViewGeneratedQR.getLayoutParams().height = (int) (mQRCodeGeneratedBitmap.getHeight() * mScale);
+        mImageViewGeneratedQR.requestLayout();
     }
 
     private void handleSavingImage() {
